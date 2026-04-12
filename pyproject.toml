@@ -1,0 +1,11 @@
+[project]
+name = "filespace"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dj-database-url>=3.1.2",
+    "django>=6.0.4",
+    "python-dotenv>=1.2.2",
+]
