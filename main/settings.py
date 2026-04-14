@@ -38,6 +38,7 @@ CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://127.0.0.1").sp
 INSTALLED_APPS = [
     # my apps
     'users',
+    'files',
     # third party apps
     'crispy_forms',
     'crispy_bootstrap5',
