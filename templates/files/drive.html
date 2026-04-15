@@ -20,7 +20,7 @@
             <li class="mb-3">
                 <strong>{{ file.name }}</strong>
                 <div class="d-flex gap-3 mt-2">
-                    <a href="{{ file.file.url }}" download>Download</a>
+                    <a href="{% url 'files:download_file' file.id %}">Download</a>
                     <form action="{% url 'files:delete_file' file.id %}" method="post" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit">Delete</button>

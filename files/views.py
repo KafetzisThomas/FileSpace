@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import FileResponse, Http404
 from .models import File
 from .forms import FileForm
 
@@ -21,6 +22,16 @@ def new_file(request):
         form = FileForm()
 
     return render(request, "files/new_file.html", {"form": form})
+
+@login_required
+def download_file(request, pk):
+    file = File.objects.get(pk=pk, owner=request.user)
+    if not file.file:
+        raise Http404()
+
+    response = FileResponse(file.file.open(), as_attachment=True)
+    response["Content-Disposition"] = f'attachment; filename="{file.name}"'
+    return response
 
 @login_required
 def delete_file(request, pk):
