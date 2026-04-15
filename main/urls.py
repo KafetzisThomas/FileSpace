@@ -22,6 +22,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include("users.urls")),
+    path('', include("files.urls")),
 ]
 
 # serve files directly from disk, use nginx for prod

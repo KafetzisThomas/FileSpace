@@ -1,5 +1,9 @@
 {% load crispy_forms_tags %}
 
+<a href="{% url 'users:register' %}">Create Account</a>
+
+<hr>
+
 <form method="post">
     {% csrf_token %}
     {{ form|crispy }}
