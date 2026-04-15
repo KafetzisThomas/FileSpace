@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import File
 from .forms import FileForm
@@ -21,3 +21,10 @@ def new_file(request):
         form = FileForm()
 
     return render(request, "files/new_file.html", {"form": form})
+
+@login_required
+def delete_file(request, pk):
+    file = get_object_or_404(File, pk=pk, owner=request.user)
+    file.file.delete()  # delete actual file from storage
+    file.delete()  # delete db record
+    return redirect("files:drive")

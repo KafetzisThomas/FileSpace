@@ -1,28 +1,35 @@
-<h1>Your Drive</h1>
+{% extends "base.html" %}
 
-<div class="d-flex gap-3">
-  <form action="{% url 'files:new_file' %}" method="get" style="display:inline;">
-    <button type="submit" class="btn btn-primary">Upload new file</button>
-  </form>
-  <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Logout</button>
-  </form>
-</div>
+{% block title %}Drive{% endblock title %}
 
-<hr>
+{% block content %}
+    <h1>Your Drive</h1>
 
-{% if files %}
-    {% for file in files %}
-      <li>
-        <strong>{{ file.name }}</strong>
-        <br>
-        <a href="{{ file.file.url }}" download>Download</a>
-        <br>
-        <small>Uploaded: {{ file.uploaded_at }}</small>
-      </li>
-      <hr>
-    {% endfor %}
-{% else %}
-  <p>Your drive is empty.</p>
-{% endif %}
+    <div class="d-flex gap-3">
+        <a href="{% url 'files:new_file' %}">Upload new file</a>
+        <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+
+    <hr>
+
+    {% if files %}
+        {% for file in files %}
+            <li class="mb-3">
+                <strong>{{ file.name }}</strong>
+                <div class="d-flex gap-3 mt-2">
+                    <a href="{{ file.file.url }}" download>Download</a>
+                    <form action="{% url 'files:delete_file' file.id %}" method="post" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit">Delete</button>
+                    </form>
+                </div>
+                <small class="text-muted">Uploaded: {{ file.uploaded_at }}</small>
+            </li>
+        {% endfor %}
+    {% else %}
+        <p>Your drive is empty.</p>
+    {% endif %}
+{% endblock content %}
