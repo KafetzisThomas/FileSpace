@@ -21,6 +21,7 @@ def user_file_path(instance, filename):
 
 class File(models.Model):
     file = models.FileField(upload_to=user_file_path)
+    size = models.BigIntegerField(blank=True)
     full_path = models.CharField(max_length=1000, blank=True, null=True)
     name = models.CharField(max_length=255, blank=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)

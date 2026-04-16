@@ -13,7 +13,7 @@ def upload_files(request):
     if request.method == "POST":
         files = request.FILES.getlist('file_field')
         for file in files:
-            File.objects.create(file=file, name=file.name, full_path=file.name, owner=request.user)
+            File.objects.create(file=file, name=file.name, full_path=file.name, size=file.size, owner=request.user)
         return redirect("files:drive")
     return render(request, "files/new_files.html")
 
@@ -25,7 +25,7 @@ def upload_dir(request):
 
         # webkitdirectory: map files to their paths and save
         for uploaded_file, relative_path in zip(files, paths):
-            File.objects.create(file=uploaded_file, name=uploaded_file.name, full_path=relative_path, owner=request.user)
+            File.objects.create(file=uploaded_file, name=uploaded_file.name, full_path=relative_path, size=uploaded_file.size, owner=request.user)
         return redirect("files:drive")
     return render(request, "files/new_dir.html")
 
