@@ -6,7 +6,8 @@
     <h1>Your Drive</h1>
 
     <div class="d-flex gap-3">
-        <a href="{% url 'files:new_file' %}">Upload new file</a>
+        <a href="{% url 'files:upload_files' %}">Upload Files</a>
+        <a href="{% url 'files:upload_dir' %}">Upload directory</a>
         <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
             {% csrf_token %}
             <button type="submit">Logout</button>
@@ -20,8 +21,8 @@
             <li class="mb-3">
                 <strong>{{ file.name }}</strong>
                 <div class="d-flex gap-3 mt-2">
-                    <a href="{% url 'files:download_file' file.id %}">Download</a>
-                    <form action="{% url 'files:delete_file' file.id %}" method="post" style="display:inline;">
+                    <a href="{% url 'files:download' file.id %}">Download</a>
+                    <form action="{% url 'files:delete' file.id %}" method="post" style="display:inline;">
                         {% csrf_token %}
                         <button type="submit">Delete</button>
                     </form>

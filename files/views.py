@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
 from .models import File
-from .forms import FileForm
 
 @login_required
 def drive(request):
@@ -10,21 +9,28 @@ def drive(request):
     return render(request, "files/drive.html", {"files": files})
 
 @login_required
-def new_file(request):
+def upload_files(request):
     if request.method == "POST":
-        form = FileForm(request.POST, request.FILES)
-        if form.is_valid():
-            file = form.save(commit=False)
-            file.owner = request.user
-            file.save()
-            return redirect("files:drive")
-    else:
-        form = FileForm()
-
-    return render(request, "files/new_file.html", {"form": form})
+        files = request.FILES.getlist('file_field')
+        for file in files:
+            File.objects.create(file=file, name=file.name, full_path=file.name, owner=request.user)
+        return redirect("files:drive")
+    return render(request, "files/new_files.html")
 
 @login_required
-def download_file(request, pk):
+def upload_dir(request):
+    if request.method == "POST":
+        files = request.FILES.getlist('file_field')
+        paths = request.POST.getlist('paths')
+
+        # webkitdirectory: map files to their paths and save
+        for uploaded_file, relative_path in zip(files, paths):
+            File.objects.create(file=uploaded_file, name=uploaded_file.name, full_path=relative_path, owner=request.user)
+        return redirect("files:drive")
+    return render(request, "files/new_dir.html")
+
+@login_required
+def download(request, pk):
     file = File.objects.get(pk=pk, owner=request.user)
     if not file.file:
         raise Http404()
@@ -34,7 +40,7 @@ def download_file(request, pk):
     return response
 
 @login_required
-def delete_file(request, pk):
+def delete(request, pk):
     file = get_object_or_404(File, pk=pk, owner=request.user)
     file.file.delete()  # delete actual file from storage
     file.delete()  # delete db record

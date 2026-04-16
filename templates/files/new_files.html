@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load crispy_forms_tags %}
 
-{% block title %}New File{% endblock title %}
+{% block title %}Upload Files{% endblock title %}
 
 {% block content %}
-    <h1>Upload File</h1>
+    <h1>Upload Files</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        {{ form|crispy }}
+        <input type="file" name="file_field" multiple required>
         <button type="submit">Upload</button>
     </form>
 {% endblock content %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Upload Directory{% endblock title %}
+
+{% block content %}
+    <h1>Upload Directory</h1>
+    <form method="post" enctype="multipart/form-data" id="dir-form">
+        {% csrf_token %}
+        <input type="file" id="folder-input" name="file_field" webkitdirectory directory multiple required>
+        <div id="path-inputs"></div>
+        <button type="submit">Upload</button>
+    </form>
+
+    <script>
+        document.getElementById('folder-input').addEventListener('change', function(e) {
+            const container = document.getElementById('path-inputs');
+            container.innerHTML = ''; 
+            for (let file of e.target.files) {
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'paths';
+                input.value = file.webkitRelativePath; 
+                container.appendChild(input);
+            }
+        });
+    </script>
+{% endblock content %}
