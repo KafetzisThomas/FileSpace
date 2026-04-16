@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load file_size %}
 
 {% block title %}Drive{% endblock title %}
 
@@ -16,20 +17,31 @@
 
     <hr>
 
-    {% if files %}
-        {% for file in files %}
-            <li class="mb-3">
-                <strong>{{ file.name }}</strong>
-                <div class="d-flex gap-3 mt-2">
-                    <a href="{% url 'files:download' file.id %}">Download</a>
-                    <form action="{% url 'files:delete' file.id %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit">Delete</button>
-                    </form>
-                </div>
-                <small class="text-muted">Uploaded: {{ file.uploaded_at }}</small>
-            </li>
-        {% endfor %}
+    {% if items %}
+        <ul>
+            {% for item in items %}
+                <li>
+                    <span style="margin-left: {{ item.depth }}rem;">
+                        {% if item.is_file %}
+                            {{ item.name }}
+                            <div class="d-flex gap-3 mt-1">
+                                <a href="{% url 'files:download' item.file.id %}">Download</a>
+                                <form action="{% url 'files:delete' item.file.id %}" method="post" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit">Delete</button>
+                                </form>
+                            </div>
+                            <small class="text-muted">
+                                Size: {{ item.file.size|file_size }}
+                                Uploaded: {{ item.file.uploaded_at }}
+                            </small>
+                        {% else %}
+                            {{ item.name }}
+                        {% endif %}
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
     {% else %}
         <p>Your drive is empty.</p>
     {% endif %}

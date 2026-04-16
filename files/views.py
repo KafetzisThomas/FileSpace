@@ -5,8 +5,36 @@ from .models import File
 
 @login_required
 def drive(request):
-    files = File.objects.filter(owner=request.user).order_by("-uploaded_at")
-    return render(request, "files/drive.html", {"files": files})
+    files = File.objects.filter(owner=request.user).order_by("full_path")
+
+    tree = {}
+    for file in files:
+        parts = file.full_path.split("/")
+        current = tree
+        for k, v in enumerate(parts):
+            if k == len(parts) - 1:
+                current.setdefault(v, {"_file": file})
+            else:
+                current = current.setdefault(v, {})
+
+    def flatten(node, depth=0):
+        items = []
+        for name, value in node.items():
+            is_file = "_file" in value
+            items.append({
+                "name": name,
+                "depth": depth,
+                "is_file": is_file,
+                "file": value.get("_file") if is_file else None
+            })
+            if not is_file:
+                items.extend(flatten(value, depth + 1))
+
+        return items
+
+    items = flatten(tree)
+
+    return render(request, "files/drive.html", {"items": items})
 
 @login_required
 def upload_files(request):
