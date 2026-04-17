@@ -4,45 +4,62 @@
 {% block title %}Drive{% endblock title %}
 
 {% block content %}
-    <h1>Your Drive</h1>
-
-    <div class="d-flex gap-3">
-        <a href="{% url 'files:upload_files' %}">Upload Files</a>
-        <a href="{% url 'files:upload_dir' %}">Upload directory</a>
-        <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit">Logout</button>
-        </form>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h4 class="mb-0">Your Drive</h4>
+        <div class="d-flex gap-2">
+            <a href="{% url 'files:upload_files' %}" class="btn btn-primary btn-sm">
+                <i class="bi bi-cloud-arrow-up"></i> Upload Files
+            </a>
+            <a href="{% url 'files:upload_dir' %}" class="btn btn-secondary btn-sm">
+                <i class="bi bi-folder-plus"></i> Upload Directory
+            </a>
+        </div>
     </div>
 
     <hr>
 
     {% if items %}
-        <ul>
+        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 mt-2">
             {% for item in items %}
-                <li>
-                    <span style="margin-left: {{ item.depth }}rem;">
-                        {% if item.is_file %}
-                            {{ item.name }}
-                            <div class="d-flex gap-3 mt-1">
-                                <a href="{% url 'files:download' item.file.id %}">Download</a>
-                                <form action="{% url 'files:delete' item.file.id %}" method="post" style="display:inline;">
-                                    {% csrf_token %}
-                                    <button type="submit">Delete</button>
-                                </form>
-                            </div>
-                            <small class="text-muted">
-                                Size: {{ item.file.size|file_size }}
-                                Uploaded: {{ item.file.uploaded_at }}
-                            </small>
-                        {% else %}
-                            {{ item.name }}
-                        {% endif %}
-                    </span>
-                </li>
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm border-0 bg-light">
+                        <div class="card-body d-flex flex-column align-items-center p-3">
+                            {% if item.is_file %}
+                                <i class="bi bi-file-earmark-text text-primary icon-lg"></i>
+                                <h6 class="card-title mt-2 mb-1 text-truncate w-100" title="{{ item.name }}">
+                                    {{ item.name }}
+                                </h6>
+                                <small class="text-muted icon-metadata mb-3">
+                                    {{ item.file.size|file_size }}<br>
+                                    {{ item.file.uploaded_at|date:"d M, Y" }}
+                                </small>
+                                
+                                <div class="d-flex justify-content-center gap-2 mt-auto w-100">
+                                    <a href="{% url 'files:download' item.file.id %}" class="btn btn-success btn-sm px-2 py-1" title="Download">
+                                        <i class="bi bi-download"></i>
+                                    </a>
+                                    <form action="{% url 'files:delete' item.file.id %}" method="post" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-danger btn-sm px-2 py-1" title="Delete">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <i class="bi bi-folder-fill text-warning icon-lg"></i>
+                                <h6 class="card-title mt-2 mb-0 text-truncate w-100" title="{{ item.name }}">
+                                    {{ item.name }}
+                                </h6>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
             {% endfor %}
-        </ul>
+        </div>
     {% else %}
-        <p>Your drive is empty.</p>
+        <div class="d-flex flex-column justify-content-center align-items-center text-muted" style="height: 60vh;">
+            <i class="bi bi-folder2-open icon-lg"></i>
+            <p class="mt-3">Your drive is empty.</p>
+        </div>
     {% endif %}
 {% endblock content %}
