@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.http import FileResponse, Http404
 from .models import File
 
@@ -37,25 +38,21 @@ def drive(request):
     return render(request, "files/drive.html", {"items": items})
 
 @login_required
+@require_POST
 def upload_files(request):
-    if request.method == "POST":
-        files = request.FILES.getlist('file_field')
-        for file in files:
-            File.objects.create(file=file, name=file.name, full_path=file.name, size=file.size, owner=request.user)
-        return redirect("files:drive")
-    return render(request, "files/new_files.html")
+    files = request.FILES.getlist('file_field')
+    for file in files:
+        File.objects.create(file=file, name=file.name, full_path=file.name, size=file.size, owner=request.user)
+    return redirect("files:drive")
 
 @login_required
+@require_POST
 def upload_dir(request):
-    if request.method == "POST":
-        files = request.FILES.getlist('file_field')
-        paths = request.POST.getlist('paths')
-
-        # webkitdirectory: map files to their paths and save
-        for uploaded_file, relative_path in zip(files, paths):
-            File.objects.create(file=uploaded_file, name=uploaded_file.name, full_path=relative_path, size=uploaded_file.size, owner=request.user)
-        return redirect("files:drive")
-    return render(request, "files/new_dir.html")
+    files = request.FILES.getlist('file_field')
+    paths = request.POST.getlist('paths')
+    for uploaded_file, relative_path in zip(files, paths):
+        File.objects.create(file=uploaded_file, name=uploaded_file.name, full_path=relative_path, size=uploaded_file.size, owner=request.user)
+    return redirect("files:drive")
 
 @login_required
 def download(request, pk):
@@ -68,6 +65,7 @@ def download(request, pk):
     return response
 
 @login_required
+@require_POST
 def delete(request, pk):
     file = get_object_or_404(File, pk=pk, owner=request.user)
     file.file.delete()  # delete actual file from storage
