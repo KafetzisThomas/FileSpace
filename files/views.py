@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.http import FileResponse, Http404
 from .models import Folder, File
@@ -24,7 +25,8 @@ def upload_files(request):
     for file in files:
         File.objects.create(file=file, name=file.name, folder=target_folder, size=file.size, owner=request.user)
 
-    return redirect("files:drive_folder", folder_id=target_folder.id) if target_folder else redirect("files:drive")
+    messages.success(request, "File uploaded successfully.")
+    return redirect("files:drive_folder", folder_id=target_folder.id) if target_folder else redirect("files:drive")    
 
 @login_required
 @require_POST
@@ -43,6 +45,7 @@ def upload_folder(request):
 
         File.objects.create(file=uploaded_file, name=uploaded_file.name, folder=current_parent, size=uploaded_file.size, owner=request.user)
 
+    messages.success(request, "Folder uploaded successfully.")
     return redirect("files:drive_folder", folder_id=root_folder.id) if root_folder else redirect("files:drive")
 
 @login_required
@@ -62,4 +65,5 @@ def delete(request, pk):
     folder_id = file.folder.id if file.folder else None
     file.file.delete()  # delete actual file from storage
     file.delete()  # delete db record
+    messages.success(request, "File deleted successfully.")
     return redirect("files:drive_folder", folder_id=folder_id) if folder_id else redirect("files:drive")
