@@ -5,19 +5,31 @@
 
 {% block content %}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="mb-0">Your Drive</h4>
+        <div class="d-flex align-items-center gap-2">
+            {% if current_folder %}
+                <a href="{% if current_folder.parent %}{% url 'files:drive_folder' current_folder.parent.id %}{% else %}{% url 'files:drive' %}{% endif %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <h4 class="mb-0">{{ current_folder.name }}</h4>
+            {% else %}
+                <h4 class="mb-0">Your Drive</h4>
+            {% endif %}
+        </div>
+
         <div class="d-flex gap-2">
             <form action="{% url 'files:upload_files' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                <input type="hidden" name="folder_id" value="{{ current_folder.id|default_if_none:'' }}">
                 <label for="direct-file-input" class="btn btn-primary btn-sm mb-0">
                     <i class="bi bi-cloud-arrow-up"></i> Upload Files
                 </label>
                 <input type="file" id="direct-file-input" name="file_field" multiple class="d-none" onchange="this.form.submit()">
             </form>
-            <form id="direct-dir-form" action="{% url 'files:upload_dir' %}" method="post" enctype="multipart/form-data">
+            <form id="direct-dir-form" action="{% url 'files:upload_folder' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
+                <input type="hidden" name="folder_id" value="{{ current_folder.id|default_if_none:'' }}">
                 <label for="direct-folder-input" class="btn btn-secondary btn-sm mb-0">
-                    <i class="bi bi-folder-plus"></i> Upload Directory
+                    <i class="bi bi-folder-plus"></i> Upload Folder
                 </label>
                 <input type="file" id="direct-folder-input" name="file_field" webkitdirectory directory multiple class="d-none">
                 <div id="direct-path-inputs"></div>
@@ -27,39 +39,45 @@
 
     <hr>
 
-    {% if items %}
+    {% if folders or files %}
         <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 mt-2">
-            {% for item in items %}
+            {% for folder in folders %}
+                <div class="col">
+                    <div class="card h-100 text-center shadow-sm border-0 bg-light cursor-pointer">
+                        <a href="{% url 'files:drive_folder' folder.id %}" class="text-decoration-none text-dark w-100 h-100 d-flex flex-column align-items-center p-3">
+                            <i class="bi bi-folder-fill text-warning icon-lg mt-4"></i>
+                            <h6 class="card-title mt-3 mb-0 text-truncate w-100" title="{{ folder.name }}">
+                                {{ folder.name }}
+                            </h6>
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+
+            {% for file in files %}
                 <div class="col">
                     <div class="card h-100 text-center shadow-sm border-0 bg-light">
                         <div class="card-body d-flex flex-column align-items-center p-3">
-                            {% if item.is_file %}
-                                <i class="bi bi-file-earmark-text text-primary icon-lg"></i>
-                                <h6 class="card-title mt-2 mb-1 text-truncate w-100" title="{{ item.name }}">
-                                    {{ item.name }}
-                                </h6>
-                                <small class="text-muted icon-metadata mb-3">
-                                    {{ item.file.size|file_size }}<br>
-                                    {{ item.file.uploaded_at|date:"d M, Y" }}
-                                </small>
+                            <i class="bi bi-file-earmark-text text-primary icon-lg"></i>
+                            <h6 class="card-title mt-2 mb-1 text-truncate w-100" title="{{ file.name }}">
+                                {{ file.name }}
+                            </h6>
+                            <small class="text-muted icon-metadata mb-3">
+                                {{ file.size|file_size }}<br>
+                                {{ file.uploaded_at|date:"d M, Y" }}
+                            </small>
 
-                                <div class="d-flex justify-content-center gap-2 mt-auto w-100">
-                                    <a href="{% url 'files:download' item.file.id %}" class="btn btn-success btn-sm px-2 py-1" title="Download">
-                                        <i class="bi bi-download"></i>
-                                    </a>
-                                    <form action="{% url 'files:delete' item.file.id %}" method="post" class="m-0">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-danger btn-sm px-2 py-1" title="Delete">
-                                            <i class="bi bi-trash3"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            {% else %}
-                                <i class="bi bi-folder-fill text-warning icon-lg mt-4"></i>
-                                <h6 class="card-title mt-2 mb-0 text-truncate w-100" title="{{ item.name }}">
-                                    {{ item.name }}
-                                </h6>
-                            {% endif %}
+                            <div class="d-flex justify-content-center gap-2 mt-auto w-100">
+                                <a href="{% url 'files:download' file.id %}" class="btn btn-success btn-sm px-2 py-1" title="Download">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                <form action="{% url 'files:delete' file.id %}" method="post" class="m-0">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm px-2 py-1" title="Delete">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -68,7 +86,7 @@
     {% else %}
         <div class="d-flex flex-column justify-content-center align-items-center text-muted drive-empty">
             <i class="bi bi-folder2-open icon-lg"></i>
-            <p class="mt-3">Your drive is empty.</p>
+            <p class="mt-3">This folder is empty.</p>
         </div>
     {% endif %}
 

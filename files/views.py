@@ -2,61 +2,52 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import FileResponse, Http404
-from .models import File
+from .models import Folder, File
 
 @login_required
-def drive(request):
-    files = File.objects.filter(owner=request.user).order_by("full_path")
+def drive(request, folder_id=None):
+    current_folder = get_object_or_404(Folder, id=folder_id, owner=request.user) if folder_id else None
 
-    tree = {}
-    for file in files:
-        parts = file.full_path.split("/")
-        current = tree
-        for k, v in enumerate(parts):
-            if k == len(parts) - 1:
-                current.setdefault(v, {"_file": file})
-            else:
-                current = current.setdefault(v, {})
+    # get subfolders and files
+    folders = Folder.objects.filter(owner=request.user, parent=current_folder).order_by("name")
+    files = File.objects.filter(owner=request.user, folder=current_folder).order_by("name")
 
-    def flatten(node, depth=0):
-        items = []
-        for name, value in node.items():
-            is_file = "_file" in value
-            items.append({
-                "name": name,
-                "depth": depth,
-                "is_file": is_file,
-                "file": value.get("_file") if is_file else None
-            })
-            if not is_file:
-                items.extend(flatten(value, depth + 1))
-
-        return items
-
-    items = flatten(tree)
-
-    return render(request, "files/drive.html", {"items": items})
+    return render(request, "files/drive.html", {"current_folder": current_folder, "folders": folders, "files": files})
 
 @login_required
 @require_POST
 def upload_files(request):
     files = request.FILES.getlist('file_field')
+    folder_id = request.POST.get('folder_id')
+    target_folder = Folder.objects.filter(id=folder_id, owner=request.user).first() if folder_id else None
+
     for file in files:
-        File.objects.create(file=file, name=file.name, full_path=file.name, size=file.size, owner=request.user)
-    return redirect("files:drive")
+        File.objects.create(file=file, name=file.name, folder=target_folder, size=file.size, owner=request.user)
+
+    return redirect("files:drive_folder", folder_id=target_folder.id) if target_folder else redirect("files:drive")
 
 @login_required
 @require_POST
-def upload_dir(request):
+def upload_folder(request):
     files = request.FILES.getlist('file_field')
     paths = request.POST.getlist('paths')
+    folder_id = request.POST.get('folder_id')
+    root_folder = Folder.objects.filter(id=folder_id, owner=request.user).first() if folder_id else None
+
     for uploaded_file, relative_path in zip(files, paths):
-        File.objects.create(file=uploaded_file, name=uploaded_file.name, full_path=relative_path, size=uploaded_file.size, owner=request.user)
-    return redirect("files:drive")
+        parts = relative_path.split('/')
+        current_parent = root_folder
+
+        for folder_name in parts[:-1]:
+            current_parent, _ = Folder.objects.get_or_create(name=folder_name, parent=current_parent, owner=request.user)
+
+        File.objects.create(file=uploaded_file, name=uploaded_file.name, folder=current_parent, size=uploaded_file.size, owner=request.user)
+
+    return redirect("files:drive_folder", folder_id=root_folder.id) if root_folder else redirect("files:drive")
 
 @login_required
 def download(request, pk):
-    file = File.objects.get(pk=pk, owner=request.user)
+    file = get_object_or_404(File, pk=pk, owner=request.user)
     if not file.file:
         raise Http404()
 
@@ -68,6 +59,7 @@ def download(request, pk):
 @require_POST
 def delete(request, pk):
     file = get_object_or_404(File, pk=pk, owner=request.user)
+    folder_id = file.folder.id if file.folder else None
     file.file.delete()  # delete actual file from storage
     file.delete()  # delete db record
-    return redirect("files:drive")
+    return redirect("files:drive_folder", folder_id=folder_id) if folder_id else redirect("files:drive")
