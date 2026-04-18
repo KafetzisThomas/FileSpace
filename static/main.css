@@ -3,6 +3,20 @@
   letter-spacing: 1px;
 }
 
+.nav-link {
+  color: #808080;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #fff;
+}
+
+.nav-link.active {
+  color: #fff;
+}
+
 .icon-lg {
   font-size: 3.5rem;
 }
