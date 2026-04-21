@@ -1,31 +1,29 @@
-from django.views.generic import CreateView, UpdateView
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.models import User
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from django.urls import reverse_lazy
 from .forms import UserUpdateForm
 
+def register(request):
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Account created successfully!")
+            return redirect("users:login")
+    else:
+        form = UserCreationForm()
+    return render(request, "users/register.html", {"form": form})
 
-class RegisterView(CreateView):
-    form_class = UserCreationForm
-    template_name = "users/register.html"
-    success_url = reverse_lazy("users:login")
 
-    def form_valid(self, form):
-        messages.success(self.request, "Account created successfully!")
-        return super().form_valid(form)
-
-
-class AccountView(LoginRequiredMixin, UpdateView):
-    model = User
-    form_class = UserUpdateForm
-    template_name = "users/account.html"
-    success_url = reverse_lazy("files:drive")
-
-    def get_object(self):
-        return self.request.user
-
-    def form_valid(self, form):
-        messages.success(self.request, "Account updated successfully.")
-        return super().form_valid(form)
+@login_required
+def account(request):
+    if request.method == "POST":
+        form = UserUpdateForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Account updated successfully.")
+            return redirect("files:drive")
+    else:
+        form = UserUpdateForm(instance=request.user)
+    return render(request, "users/account.html", {"form": form})
