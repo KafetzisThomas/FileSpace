@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'users',
     'files',
     # third party apps
+    'axes',
     'crispy_forms',
     'crispy_bootstrap5',
     # default django apps
@@ -59,6 +60,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'axes.middleware.AxesMiddleware',
+]
+
+AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 ROOT_URLCONF = 'main.urls'
@@ -146,3 +153,10 @@ LOGOUT_REDIRECT_URL = "/"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 1
+AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
+
+if DEBUG:
+    AXES_ENABLED = False
