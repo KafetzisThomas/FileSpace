@@ -8,8 +8,10 @@ def register(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Account created successfully!")
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            messages.success(request, "Your account is pending approval. You'll be able to log in once approved.")
             return redirect("users:login")
     else:
         form = UserCreationForm()
