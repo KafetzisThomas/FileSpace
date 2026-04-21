@@ -7,13 +7,23 @@ from .models import Folder, File
 
 @login_required
 def drive(request, folder_id=None):
+    search_query = request.GET.get("search_query")
     current_folder = get_object_or_404(Folder, id=folder_id, owner=request.user) if folder_id else None
 
     # get subfolders and files
     folders = Folder.objects.filter(owner=request.user, parent=current_folder).order_by("name")
     files = File.objects.filter(owner=request.user, folder=current_folder).order_by("name")
 
-    return render(request, "files/drive.html", {"current_folder": current_folder, "folders": folders, "files": files})
+    if search_query:
+        folders = Folder.objects.filter(owner=request.user, name__icontains=search_query).order_by("name")
+        files = File.objects.filter(owner=request.user, name__icontains=search_query).order_by("name")
+
+    return render(request, "files/drive.html", {
+        "current_folder": current_folder,
+        "folders": folders,
+        "files": files,
+        "search_query": search_query,
+    })
 
 @login_required
 @require_POST
