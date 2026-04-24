@@ -22,12 +22,6 @@ cp .env.local .env
 nano .env  # modify file, instructions inside
 ```
 
-### Run with Docker
-
-```bash
-docker compose up -d --build
-```
-
 Migrate database:
 
 ```bash
