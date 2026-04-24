@@ -12,3 +12,9 @@ dependencies = [
     "django-crispy-forms>=2.6",
     "python-dotenv>=1.2.2",
 ]
+
+[dependency-groups]
+dev = [
+    "gunicorn>=25.3.0",
+    "psycopg2-binary>=2.9.12",
+]

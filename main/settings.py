@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://127.0.0.1").split(",")
 
 # Application definition
@@ -106,7 +106,14 @@ if DEBUG:
 else:
     # postgresql for prod
     DATABASES = {
-        "default": dj_database_url.parse(os.getenv("DATABASE_URL")),
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("DATABASE_NAME"),
+            "USER": os.getenv("DATABASE_USERNAME"),
+            "PASSWORD": os.getenv("DATABASE_PASSWORD"),
+            "HOST": os.getenv("DATABASE_HOST"),
+            "PORT": os.getenv("DATABASE_PORT", 5432),
+        }
     }
 
 
@@ -161,3 +168,7 @@ AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
 
 if DEBUG:
     AXES_ENABLED = False
+
+INTERNAL_IPS = [
+    "127.0.0.1",
+]
