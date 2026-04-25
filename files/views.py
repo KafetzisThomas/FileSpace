@@ -70,10 +70,24 @@ def download(request, pk):
 
 @login_required
 @require_POST
-def delete(request, pk):
+def delete_file(request, pk):
     file = get_object_or_404(File, pk=pk, owner=request.user)
     folder_id = file.folder.id if file.folder else None
     file.file.delete()  # delete actual file from storage
     file.delete()  # delete db record
     messages.success(request, "File deleted successfully.")
     return redirect("files:drive_folder", folder_id=folder_id) if folder_id else redirect("files:drive")
+
+@login_required
+@require_POST
+def delete_folder(request, pk):
+    folder = get_object_or_404(Folder, pk=pk, owner=request.user)
+    parent_id = folder.parent.id if folder.parent else None
+
+    # delete all files inside from storage
+    for file in folder.files.all():
+        file.file.delete()
+
+    folder.delete()
+    messages.success(request, "Folder deleted successfully.")
+    return redirect("files:drive_folder", folder_id=parent_id) if parent_id else redirect("files:drive")
