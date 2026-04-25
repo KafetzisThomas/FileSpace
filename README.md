@@ -15,13 +15,6 @@ pip install uv
 uv sync
 ```
 
-Set up your environment variables:
-
-```bash
-cp .env.local .env
-nano .env  # modify file, instructions inside
-```
-
 Migrate database:
 
 ```bash
