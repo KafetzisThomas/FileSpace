@@ -5,10 +5,13 @@ app_name = "files"
 urlpatterns = [
     path("", views.drive, name="drive"),
     path('drive/<int:folder_id>/', views.drive, name='drive_folder'),
+
     path("upload/files/", views.upload_files, name="upload_files"),
     path("upload/folder/", views.upload_folder, name="upload_folder"),
-    path("download_file/<int:pk>/", views.download_file, name="download_file"),
-    path("download_folder/<int:pk>/", views.download_folder, name="download_folder"),
-    path("delete_file/<int:pk>/", views.delete_file, name="delete_file"),
-    path("delete_folder/<int:pk>/", views.delete_folder, name="delete_folder"),
+
+    path("files/<int:pk>/download", views.download_file, name="file_download"),
+    path("files/<int:pk>/delete", views.delete_file, name="file_delete"),
+
+    path("folders/<int:pk>/download", views.download_folder, name="folder_download"),
+    path("folders/<int:pk>/delete", views.delete_folder, name="folder_delete"),
 ]
