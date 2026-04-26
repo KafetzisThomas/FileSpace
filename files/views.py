@@ -1,9 +1,12 @@
+import zipfile
+from io import BytesIO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_POST
-from django.http import FileResponse, Http404
+from django.http import HttpResponse, FileResponse, Http404
 from .models import Folder, File
+from .utils import add_folder_to_zip
 
 @login_required
 def drive(request, folder_id=None):
@@ -59,13 +62,27 @@ def upload_folder(request):
     return redirect("files:drive_folder", folder_id=root_folder.id) if root_folder else redirect("files:drive")
 
 @login_required
-def download(request, pk):
+def download_file(request, pk):
     file = get_object_or_404(File, pk=pk, owner=request.user)
     if not file.file:
         raise Http404()
 
     response = FileResponse(file.file.open(), as_attachment=True)
     response["Content-Disposition"] = f'attachment; filename="{file.name}"'
+    return response
+
+@login_required
+def download_folder(request, pk):
+    folder = get_object_or_404(Folder, pk=pk, owner=request.user)
+    buffer = BytesIO()
+
+    with zipfile.ZipFile(file=buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as zip_file:
+        add_folder_to_zip(zip_file, folder, base_path=f"{folder.name}/")
+
+    buffer.seek(0)
+
+    response = HttpResponse(buffer, content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{folder.name}.zip"'
     return response
 
 @login_required
