@@ -14,12 +14,21 @@
         <div class="d-flex align-items-center gap-2">
             {% if current_folder %}
                 <a href="{% if current_folder.parent %}{% url 'files:drive_folder' current_folder.parent.id %}{% else %}{% url 'files:drive' %}{% endif %}" class="btn btn-outline-secondary btn-sm">
-                    <i class="bi bi-arrow-left"></i> Back
+                    <i class="bi bi-arrow-left"></i>
                 </a>
-                <h4 class="mb-0">{{ current_folder.name }}</h4>
-            {% else %}
-                <h4 class="mb-0">Your Drive</h4>
             {% endif %}
+
+            <h4 class="mb-0 d-flex align-items-center gap-2">
+                {% if current_folder %}
+                    {{ current_folder.name }}
+                {% else %}
+                    Your Drive
+                {% endif %}
+                <span class="text-muted">/</span>
+                <span class="badge bg-secondary small px-2 py-1">
+                    {{ total_items_count }} Items
+                </span>
+            </h4>
         </div>
 
         <div class="d-flex gap-2">

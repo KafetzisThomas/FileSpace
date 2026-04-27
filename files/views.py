@@ -21,11 +21,14 @@ def drive(request, folder_id=None):
         folders = Folder.objects.filter(owner=request.user, name__icontains=search).order_by("name")
         files = File.objects.filter(owner=request.user, name__icontains=search).order_by("name")
 
+    total_items_count = folders.count() + files.count()
+
     return render(request, "files/drive.html", {
         "current_folder": current_folder,
         "folders": folders,
         "files": files,
         "search": search,
+        "total_items_count": total_items_count,
     })
 
 @login_required
