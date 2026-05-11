@@ -1,6 +1,7 @@
 <div align="center">
     <h1>FileSpace</h1>
     <p>Simple personal file storage.<br>Written in Python/Django</p>
+    <img src="https://img.shields.io/badge/Docker-Enabled-blue?logo=docker"/>
 </div>
 
 ## Usage
