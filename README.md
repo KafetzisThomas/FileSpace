@@ -4,6 +4,10 @@
     <img src="https://img.shields.io/badge/Docker-Enabled-blue?logo=docker"/>
 </div>
 
+## Database Schema
+
+![Database Schema](static/db_schema.png)
+
 ## Usage
 
 ### Local Development
