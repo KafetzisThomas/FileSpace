@@ -41,7 +41,7 @@ def upload_files(request):
     for file in files:
         File.objects.create(file=file, name=file.name, folder=target_folder, size=file.size, owner=request.user)
 
-    messages.success(request, "File uploaded successfully.")
+    messages.success(request, "File(s) uploaded successfully.")
     return redirect("files:drive_folder", folder_id=target_folder.id) if target_folder else redirect("files:drive")    
 
 @login_required
