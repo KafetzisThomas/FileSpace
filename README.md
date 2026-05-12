@@ -18,7 +18,7 @@
 
 ## Database Schema
 
-![Database Schema](static/db_schema.png)
+![Database Schema](static/icons/db_schema.png)
 
 ## Usage
 
@@ -62,3 +62,17 @@ docker compose up -d --build
 ```
 
 Access web application at `http://127.0.0.1:8001` or `http://localhost:8001`.
+
+## Demo Images
+
+![Drive](/static/icons/drive.png)
+
+![Upload Folder](/static/icons/upload_folder.png)
+
+![Upload File](/static/icons/upload_file.png)
+
+![Folder Contents](/static/icons/folder_contents.png)
+
+![Search](/static/icons/search.png)
+
+![Delete File](/static/icons/delete_file.png)
