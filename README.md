@@ -4,6 +4,18 @@
     <img src="https://img.shields.io/badge/Docker-Enabled-blue?logo=docker"/>
 </div>
 
+## Features
+
+- [X] Upload **single files**, **multiple files** or entire **folders**
+- [X] **Download files** with original filenames preserved
+- [X] **Recursive folder downloads** as `.zip` archives
+- [X] Unlimited **nested folder hierarchy** support
+- [X] File and folder **search**
+- [X] Recursive file and folder **deletion**
+- [X] Secure user authentication and isolated **per user file storage**
+- [X] **UUID based** secure file storage
+- [X] Brute force login protection with **rate limiting**
+
 ## Database Schema
 
 ![Database Schema](static/db_schema.png)
