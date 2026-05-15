@@ -2,7 +2,7 @@ import uuid
 from django.test import TestCase
 from unittest.mock import Mock
 from django.contrib.auth import get_user_model
-from ..models import user_file_path, Folder
+from ..models import user_file_path, Folder, File
 
 User = get_user_model()
 
@@ -48,3 +48,33 @@ class FolderModelTests(TestCase):
         self.assertEqual(root.subfolders.count(), 1)
         self.assertEqual(root.subfolders.first(), child)
         self.assertEqual(child.parent, root)
+
+
+class FileModelTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser')
+        self.folder = Folder.objects.create(name="Documents", owner=self.user)
+
+    def test_file_creation(self):
+        file = File.objects.create(
+            file="file_path.txt", name="test.txt", size=25, folder=self.folder, owner=self.user
+        )
+        self.assertEqual(str(file), "test.txt")
+        self.assertEqual(file.folder, self.folder)
+
+    def test_cascade_delete_on_folder(self):
+        File.objects.create(
+            file="file_path.txt", name="test.txt", size=25, folder=self.folder, owner=self.user
+        )
+        self.assertEqual(File.objects.count(), 1)
+        self.folder.delete()
+        self.assertEqual(File.objects.count(), 0)
+
+    def test_cascade_delete_on_user(self):
+        File.objects.create(
+            file="file_path.txt", name="test.txt", size=25, folder=self.folder, owner=self.user
+        )
+        self.assertEqual(File.objects.count(), 1)
+        self.user.delete()
+        self.assertEqual(File.objects.count(), 0)
