@@ -122,3 +122,78 @@ class UploadFilesViewTests(TestCase):
         uploaded_file = File.objects.get(name="test1.txt")
         self.assertIsNone(uploaded_file.folder)
         self.assertEqual(uploaded_file.owner, self.user1)
+
+
+class UploadFolderViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user = User.objects.create_user(username='user', password='password123')
+        self.root_folder = Folder.objects.create(name="Root", owner=self.user)
+
+        self.url = reverse('files:upload_folder')
+
+        self.file1 = SimpleUploadedFile("test1.txt", b"test_content_1")
+        self.file2 = SimpleUploadedFile("test2.txt", b"test_content_2")
+        self.file3 = SimpleUploadedFile("test3.txt", b"test_content_3")
+
+    def test_get_request_is_rejected(self):
+        self.client.login(username='user', password='password123')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_upload_folder_to_root(self):
+        self.client.login(username='user', password='password123')
+        response = self.client.post(self.url, {
+            'file_field': [self.file1, self.file3],
+            'paths': ['Documents/tests/test1.txt', 'Documents/test3.txt']
+        })
+        self.assertRedirects(response, reverse('files:drive'))
+
+        documents_folder = Folder.objects.filter(name='Documents', owner=self.user, parent=None).first()
+        self.assertIsNotNone(documents_folder)
+
+        tests_folder = Folder.objects.filter(name='tests', owner=self.user, parent=documents_folder).first()
+        self.assertIsNotNone(tests_folder)
+
+        test_file_1 = File.objects.get(name="test1.txt")
+        test_file_3 = File.objects.get(name="test3.txt")
+
+        self.assertEqual(test_file_1.folder, tests_folder)
+        self.assertEqual(test_file_3.folder, documents_folder)
+
+    def test_upload_folder_prevents_duplicates(self):
+        self.client.login(username='user', password='password123')
+        self.client.post(self.url, {
+            'file_field': [self.file1, self.file2],
+            'paths': ['Documents/test1.txt', 'Documents/test2.txt']
+        })
+
+        shared_folders = Folder.objects.filter(name='Documents', owner=self.user)
+        self.assertEqual(shared_folders.count(), 1)
+
+        shared_folder = shared_folders.first()
+        self.assertEqual(shared_folder.files.count(), 2)
+
+    def test_upload_folder_to_existing_target(self):
+        self.client.login(username='user', password='password123')
+        response = self.client.post(self.url, {
+            'file_field': [self.file1],
+            'paths': ['NewDir/test1.txt'],
+            'folder_id': self.root_folder.id
+        })
+        self.assertRedirects(response, reverse('files:drive_folder', kwargs={'folder_id': self.root_folder.id}))
+
+        new_dir_folder = Folder.objects.filter(name='NewDir', owner=self.user).first()
+        self.assertEqual(new_dir_folder.parent, self.root_folder)
+
+        file = File.objects.get(name="test1.txt")
+        self.assertEqual(file.folder, new_dir_folder)
+
+    def test_upload_with_flat_path_acts_like_standard_upload(self):
+        self.client.login(username='user', password='password123')
+        self.client.post(self.url, {'file_field': [self.file1], 'paths': ['test1.txt']})
+
+        file = File.objects.get(name="test1.txt")
+        self.assertIsNone(file.folder)  # attached straight to root
