@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from ..models import Folder, File
 
 User = get_user_model()
@@ -66,3 +67,58 @@ class DriveViewTests(TestCase):
         self.assertEqual(response.context['search'], 'sub_file')
         self.assertIn(self.sub_file_user_1, response.context['files'])
         self.assertNotIn(self.root_file_user_1, response.context['files'])
+
+
+class UploadFilesViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user1 = User.objects.create_user(username='user1', password='password123')
+        self.user2 = User.objects.create_user(username='user2', password='password123')
+
+        self.user_1_folder = Folder.objects.create(name="Documents", owner=self.user1)
+        self.user_2_folder = Folder.objects.create(name="Projects", owner=self.user2)
+
+        self.url = reverse('files:upload_files')
+
+        self.file1 = SimpleUploadedFile("test1.txt", b"test_content_1")
+        self.file2 = SimpleUploadedFile("test2.txt", b"test_content_2")
+
+    def test_get_request_is_rejected(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_unauthenticated_user_redirects_to_login(self):
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/user/login/'))
+
+    def test_upload_to_root_drive(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.post(self.url, {'file_field': [self.file1, self.file2]})
+
+        self.assertRedirects(response, reverse('files:drive'))
+        self.assertEqual(File.objects.filter(owner=self.user1).count(), 2)
+
+        uploaded_file = File.objects.get(name="test1.txt")
+        self.assertIsNone(uploaded_file.folder)
+
+    def test_upload_to_specific_folder(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.post(self.url, {'file_field': [self.file1], 'folder_id': self.user_1_folder.id})
+
+        self.assertRedirects(response, reverse('files:drive_folder', kwargs={'folder_id': self.user_1_folder.id}))
+
+        uploaded_file = File.objects.get(name="test1.txt")
+        self.assertEqual(uploaded_file.folder, self.user_1_folder)
+
+    def test_upload_to_another_users_folder(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.post(self.url, {'file_field': [self.file1], 'folder_id': self.user_2_folder.id})
+        self.assertRedirects(response, reverse('files:drive'))
+
+        uploaded_file = File.objects.get(name="test1.txt")
+        self.assertIsNone(uploaded_file.folder)
+        self.assertEqual(uploaded_file.owner, self.user1)
