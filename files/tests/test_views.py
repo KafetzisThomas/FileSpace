@@ -2,6 +2,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.http import FileResponse
 from ..models import Folder, File
 
 User = get_user_model()
@@ -197,3 +198,44 @@ class UploadFolderViewTests(TestCase):
 
         file = File.objects.get(name="test1.txt")
         self.assertIsNone(file.folder)  # attached straight to root
+
+
+class DownloadFileViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user1 = User.objects.create_user(username='user1', password='password123')
+        self.user2 = User.objects.create_user(username='user2', password='password123')
+
+        file1 = SimpleUploadedFile("test.txt", b"test_content")
+        self.valid_file = File.objects.create(file=file1, name="test.txt", size=16, owner=self.user1)
+        self.invalid_file = File.objects.create(name="missing.txt", size=0, owner=self.user1)
+
+    def test_unauthenticated_user_redirects_to_login(self):
+        url = reverse('files:file_download', kwargs={'pk': self.valid_file.pk})
+        response = self.client.get(url)
+        self.assertRedirects(response, f'/user/login/?next={url}')
+
+    def test_user_cannot_download_other_users_file(self):
+        self.client.login(username='user2', password='password123')
+        url = reverse('files:file_download', kwargs={'pk': self.valid_file.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_missing_physical_file_raises_404(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_download', kwargs={'pk': self.invalid_file.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_successful_download_headers_and_response_type(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_download', kwargs={'pk': self.valid_file.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsInstance(response, FileResponse)
+
+        expected_header = f'attachment; filename="{self.valid_file.name}"'
+        self.assertEqual(response.headers['Content-Disposition'], expected_header)
+        self.assertEqual(b''.join(response.streaming_content), b"test_content")
