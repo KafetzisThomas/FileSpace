@@ -1,3 +1,4 @@
+import os
 import io
 import zipfile
 from django.test import TestCase, Client
@@ -303,3 +304,67 @@ class DownloadFolderViewTests(TestCase):
 
             with zip_file.open(expected_root_file) as file:
                 self.assertEqual(file.read(), b"test_content_1")
+
+
+class DeleteFileViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user1 = User.objects.create_user(username='user1', password='password123')
+        self.user2 = User.objects.create_user(username='user2', password='password123')
+        self.folder = Folder.objects.create(name="Documents", owner=self.user1)
+
+        self.file1 = File.objects.create(
+            file=SimpleUploadedFile("test1.txt", b"test_content_1"),
+            name="test1.txt",
+            size=12,
+            owner=self.user1
+        )
+        self.file2 = File.objects.create(
+            file=SimpleUploadedFile("test2.txt", b"test_content_2"),
+            name="test2.txt",
+            size=14,
+            folder=self.folder,
+            owner=self.user1
+        )
+
+    def test_get_request_is_rejected(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_delete', kwargs={'pk': self.file1.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_unauthenticated_user_redirects_to_login(self):
+        url = reverse('files:file_delete', kwargs={'pk': self.file1.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/user/login/'))
+        self.assertEqual(File.objects.filter(pk=self.file1.pk).count(), 1)
+
+    def test_user_cannot_delete_other_users_file(self):
+        self.client.login(username='user2', password='password123')
+        url = reverse('files:file_delete', kwargs={'pk': self.file1.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(File.objects.filter(pk=self.file1.pk).count(), 1)
+
+    def test_successful_deletion_of_root_file(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_delete', kwargs={'pk': self.file1.pk})
+        physical_file_path = self.file1.file.path
+        self.assertTrue(os.path.exists(physical_file_path))
+
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse('files:drive'))
+        self.assertFalse(File.objects.filter(pk=self.file1.pk).exists())
+        self.assertFalse(os.path.exists(physical_file_path))
+
+    def test_successful_deletion_of_nested_file(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_delete', kwargs={'pk': self.file2.pk})
+        response = self.client.post(url)
+
+        expected_redirect_url = reverse('files:drive_folder', kwargs={'folder_id': self.folder.id})
+        self.assertRedirects(response, expected_redirect_url)
+        self.assertFalse(File.objects.filter(pk=self.file2.pk).exists())
