@@ -368,3 +368,67 @@ class DeleteFileViewTests(TestCase):
         expected_redirect_url = reverse('files:drive_folder', kwargs={'folder_id': self.folder.id})
         self.assertRedirects(response, expected_redirect_url)
         self.assertFalse(File.objects.filter(pk=self.file2.pk).exists())
+
+
+class DeleteFolderViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user1 = User.objects.create_user(username='user1', password='password123')
+        self.user2 = User.objects.create_user(username='user2', password='password123')
+
+        self.folder1 = Folder.objects.create(name="Root", owner=self.user1)
+        self.file1 = File.objects.create(
+            file=SimpleUploadedFile("test1.txt", b"test_content_1"),
+            name="test1.txt",
+            size=12,
+            folder=self.folder1,
+            owner=self.user1
+        )
+        self.folder2 = Folder.objects.create(name="Sub", parent=self.folder1, owner=self.user1)
+        self.file2 = File.objects.create(
+            file=SimpleUploadedFile("test2.txt", b"test_content_2"),
+            name="test2.txt",
+            size=11,
+            folder=self.folder2,
+            owner=self.user1
+        )
+
+    def test_get_request_is_rejected(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:folder_delete', kwargs={'pk': self.folder1.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 405)
+
+    def test_unauthenticated_user_redirects_to_login(self):
+        url = reverse('files:folder_delete', kwargs={'pk': self.folder1.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Folder.objects.filter(pk=self.folder1.pk).exists())
+
+    def test_user_cannot_delete_other_users_folder(self):
+        self.client.login(username='user2', password='password123')
+        url = reverse('files:folder_delete', kwargs={'pk': self.folder1.pk})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 404)
+        self.assertTrue(Folder.objects.filter(pk=self.folder1.pk).exists())
+
+    def test_successful_deletion_of_nested_folder(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:folder_delete', kwargs={'pk': self.folder2.pk})
+        physical_file_path = self.file2.file.path
+        self.assertTrue(os.path.exists(physical_file_path))
+
+        response = self.client.post(url)
+        expected_redirect_url = reverse('files:drive_folder', kwargs={'folder_id': self.folder1.id})
+        self.assertRedirects(response, expected_redirect_url)
+        self.assertFalse(Folder.objects.filter(pk=self.folder2.pk).exists())
+        self.assertFalse(os.path.exists(physical_file_path))
+
+    def test_successful_deletion_of_root_folder(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:folder_delete', kwargs={'pk': self.folder1.pk})
+        response = self.client.post(url)
+        self.assertRedirects(response, reverse('files:drive'))
+        self.assertFalse(Folder.objects.filter(pk=self.folder1.pk).exists())
