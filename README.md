@@ -1,6 +1,7 @@
 <div align="center">
     <h1>FileSpace</h1>
     <p>Simple personal file storage.<br>Written in Python/Django</p>
+    <img src="https://github.com/KafetzisThomas/FileSpace/actions/workflows/tests.yml/badge.svg"/>
     <img src="https://img.shields.io/badge/Docker-Enabled-blue?logo=docker"/>
 </div>
 
@@ -62,6 +63,12 @@ docker compose up -d --build
 ```
 
 Access web application at `http://127.0.0.1:8001` or `http://localhost:8001`.
+
+## Run Tests
+
+```bash
+uv run manage.py test
+```
 
 ## Demo Images
 
