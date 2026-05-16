@@ -1,3 +1,5 @@
+import io
+import zipfile
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -239,3 +241,65 @@ class DownloadFileViewTests(TestCase):
         expected_header = f'attachment; filename="{self.valid_file.name}"'
         self.assertEqual(response.headers['Content-Disposition'], expected_header)
         self.assertEqual(b''.join(response.streaming_content), b"test_content")
+
+
+class DownloadFolderViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user1 = User.objects.create_user(username='user1', password='password123')
+        self.user2 = User.objects.create_user(username='user2', password='password123')
+
+        self.root_folder = Folder.objects.create(name="Documents", owner=self.user1)
+        self.sub_folder = Folder.objects.create(name="tests", parent=self.root_folder, owner=self.user1)
+
+        self.file1 = File.objects.create(
+            file=SimpleUploadedFile("test1.txt", b"test_content_1"),
+            name="test1.txt",
+            size=21,
+            folder=self.root_folder,
+            owner=self.user1
+        )
+        self.file2 = File.objects.create(
+            file=SimpleUploadedFile("test2.txt", b"test_content_2"),
+            name="test2.txt",
+            size=13,
+            folder=self.sub_folder,
+            owner=self.user1
+        )
+
+        self.url = reverse('files:folder_download', kwargs={'pk': self.root_folder.pk})
+
+    def test_unauthenticated_user_redirects_to_login(self):
+        response = self.client.get(self.url)
+        self.assertRedirects(response, f'/user/login/?next={self.url}')
+
+    def test_user_cannot_download_other_users_folder(self):
+        self.client.login(username='user2', password='password123')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_successful_zip_download_headers(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/zip')
+        self.assertEqual(response['Content-Disposition'], f'attachment; filename="{self.root_folder.name}.zip"')
+
+    def test_zip_archive_integrity_and_hierarchy(self):
+        self.client.login(username='user1', password='password123')
+        response = self.client.get(self.url)
+        buffer = io.BytesIO(response.content)
+
+        with zipfile.ZipFile(buffer, 'r') as zip_file:
+            zip_contents = zip_file.namelist()
+
+            expected_root_file = "Documents/test1.txt"
+            expected_sub_file = "Documents/tests/test2.txt"
+
+            self.assertIn(expected_root_file, zip_contents)
+            self.assertIn(expected_sub_file, zip_contents)
+
+            with zip_file.open(expected_root_file) as file:
+                self.assertEqual(file.read(), b"test_content_1")
