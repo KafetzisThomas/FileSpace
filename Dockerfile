@@ -9,16 +9,10 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# copy dependency files first (cache layer)
 COPY pyproject.toml uv.lock ./
-
-# install depedencies including dev group
-RUN uv sync --frozen --group dev
+RUN uv sync --frozen
 
 COPY . .
-
-# ensure project is installed in venv too
-RUN uv sync --frozen --group dev
 
 
 # PRODUCTION STAGE
@@ -31,9 +25,6 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PATH="/app/.venv/bin:$PATH"
 
-RUN mkdir -p /app/static /app/media
-
-# copy application code
 COPY --from=builder /app /app
 
 EXPOSE 8000
