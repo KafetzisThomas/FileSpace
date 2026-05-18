@@ -144,6 +144,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+
 if not DEBUG:
     # prod: use S3 for media and static files
     STORAGES = {
@@ -162,11 +166,7 @@ if not DEBUG:
     AWS_S3_FILE_OVERWRITE = False
     AWS_DEFAULT_ACL = None
 else:
-    # local: serve static and media files locally
-    STATIC_URL = '/static/'
-    STATIC_ROOT = BASE_DIR / "staticfiles"
-    STATICFILES_DIRS = [BASE_DIR / "static"]
-
+    # local: serve media files locally
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
