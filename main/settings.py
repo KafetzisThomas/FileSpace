@@ -149,8 +149,6 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
-STATIC_URL = '/static/'
-
 if not DEBUG:
     # prod: use whitenoise for static files + S3 compatible storage
     STORAGES = {
