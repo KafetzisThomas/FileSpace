@@ -19,7 +19,7 @@
 
 ## Database Schema
 
-![Database Schema](static/icons/db_schema.png)
+![Database Schema](/assets/db_schema.png)
 
 ## Usage
 
@@ -72,14 +72,14 @@ uv run manage.py test
 
 ## Demo Images
 
-![Drive](/static/icons/drive.png)
+![Drive](/assets/drive.png)
 
-![Upload Folder](/static/icons/upload_folder.png)
+![Upload Folder](/assets/upload_folder.png)
 
-![Upload File](/static/icons/upload_file.png)
+![Upload File](/assets/upload_file.png)
 
-![Folder Contents](/static/icons/folder_contents.png)
+![Folder Contents](/assets/folder_contents.png)
 
-![Search](/static/icons/search.png)
+![Search](/assets/search.png)
 
-![Delete File](/static/icons/delete_file.png)
+![Delete File](/assets/delete_file.png)
