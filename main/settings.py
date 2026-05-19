@@ -181,6 +181,20 @@ AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
 if DEBUG:
     AXES_ENABLED = False
 
-INTERNAL_IPS = [
-    "127.0.0.1",
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = os.getenv("EMAIL_HOST")
+EMAIL_TIMEOUT = 10
+EMAIL_USE_TLS = True
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+
+ADMINS = [
+    (os.getenv("ADMIN_USERNAME"), os.getenv("ADMIN_EMAIL")),
 ]
+
+if DEBUG:
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
