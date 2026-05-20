@@ -10,8 +10,8 @@
         {% endfor %}
     {% endif %}
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div class="d-flex align-items-center gap-2">
+    <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+        <div class="d-flex align-items-center gap-2 text-nowrap">
             {% if current_folder %}
                 <a href="{% if current_folder.parent %}{% url 'files:drive_folder' current_folder.parent.id %}{% else %}{% url 'files:drive' %}{% endif %}" class="btn btn-outline-secondary btn-sm">
                     <i class="bi bi-arrow-left"></i>
@@ -24,95 +24,96 @@
                 {% else %}
                     Your Drive
                 {% endif %}
-                <span class="text-muted">/</span>
+                <span class="text-muted d-none d-sm-inline">/</span>
                 <span class="badge bg-secondary small px-2 py-1">
                     {{ total_items_count }} Items
                 </span>
             </h4>
         </div>
 
-        <div class="d-flex gap-2">
-            <form class="d-flex" method="get">
-                <input class="form-control form-control-sm" style="width: 250px;" type="search" name="search" placeholder="Search files and folders" value="{{ search|default:'' }}">
+        <div class="d-flex flex-column flex-md-row gap-2 w-100 justify-content-lg-end">
+            <form class="d-flex w-100" method="get" style="max-width: 350px;">
+                <input class="form-control form-control-sm w-100" type="search" name="search" placeholder="Search files and folders" value="{{ search|default:'' }}">
             </form>
-            <form action="{% url 'files:upload_files' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="folder_id" value="{{ current_folder.id|default_if_none:'' }}">
-                <label for="direct-file-input" class="btn btn-primary btn-sm mb-0">
-                    <i class="bi bi-cloud-arrow-up"></i> Upload Files
-                </label>
-                <input type="file" id="direct-file-input" name="file_field" multiple class="d-none" onchange="this.form.submit()">
-            </form>
-            <form id="direct-dir-form" action="{% url 'files:upload_folder' %}" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="hidden" name="folder_id" value="{{ current_folder.id|default_if_none:'' }}">
-                <label for="direct-folder-input" class="btn btn-secondary btn-sm mb-0">
-                    <i class="bi bi-folder-plus"></i> Upload Folder
-                </label>
-                <input type="file" id="direct-folder-input" name="file_field" webkitdirectory directory multiple class="d-none">
-                <div id="direct-path-inputs"></div>
-            </form>
+            <div class="d-flex gap-2">
+                <form action="{% url 'files:upload_files' %}" method="post" enctype="multipart/form-data" class="flex-fill">
+                    {% csrf_token %}
+                    <input type="hidden" name="folder_id" value="{{ current_folder.id|default_if_none:'' }}">
+                    <label for="direct-file-input" class="btn btn-primary btn-sm mb-0 w-100 text-nowrap">
+                        <i class="bi bi-cloud-arrow-up"></i> Upload Files
+                    </label>
+                    <input type="file" id="direct-file-input" name="file_field" multiple class="d-none" onchange="this.form.submit()">
+                </form>
+                <form id="direct-dir-form" action="{% url 'files:upload_folder' %}" method="post" enctype="multipart/form-data" class="flex-fill">
+                    {% csrf_token %}
+                    <input type="hidden" name="folder_id" value="{{ current_folder.id|default_if_none:'' }}">
+                    <label for="direct-folder-input" class="btn btn-secondary btn-sm mb-0 w-100 text-nowrap">
+                        <i class="bi bi-folder-plus"></i> Upload Folder
+                    </label>
+                    <input type="file" id="direct-folder-input" name="file_field" webkitdirectory directory multiple class="d-none">
+                    <div id="direct-path-inputs"></div>
+                </form>
+            </div>
         </div>
     </div>
 
     <hr>
 
     {% if folders or files %}
-        <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-lg-5 g-3 mt-2">
+        <div class="d-flex flex-column gap-2 mt-2">
             {% for folder in folders %}
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm border border-light-subtle bg-body-tertiary">
-                        <div class="card-body d-flex flex-column align-items-center p-3">
-                            <a href="{% url 'files:drive_folder' folder.id %}" class="text-decoration-none text-body w-100 d-flex flex-column align-items-center flex-grow-1 justify-content-center">
-                                <i class="bi bi-folder-fill text-warning icon-lg"></i>
-                                <h6 class="card-title mt-3 mb-3 text-truncate w-100">{{ folder.name }}</h6>
+                <div class="card shadow-sm border border-light-subtle bg-body-tertiary">
+                    <div class="card-body d-flex flex-column flex-md-row align-items-md-center p-3 gap-3">
+                        <a href="{% url 'files:drive_folder' folder.id %}" class="text-decoration-none text-body d-flex align-items-center gap-3 flex-grow-1 overflow-hidden w-100">
+                            <i class="bi bi-folder-fill text-warning fs-3"></i>
+                            <h6 class="card-title mb-0 text-truncate">{{ folder.name }}</h6>
+                        </a>
+                        <div class="d-flex gap-2 w-100 w-md-auto justify-content-end mt-2 mt-md-0">
+                            <a href="{% url 'files:folder_download' folder.id %}" class="btn btn-success btn-sm flex-fill flex-md-grow-0">
+                                <i class="bi bi-download"></i> <span class="d-none d-sm-inline">Download</span>
                             </a>
-                            <div class="d-flex gap-2 mt-auto w-100">
-                                <a href="{% url 'files:folder_download' folder.id %}" class="btn btn-success btn-sm w-100">
-                                    <i class="bi bi-download"></i> Download
-                                </a>
-                                <form action="{% url 'files:folder_delete' folder.id %}" method="post" class="w-100 m-0">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm w-100">
-                                        <i class="bi bi-trash3"></i> Delete
-                                    </button>
-                                </form>
-                            </div>
+                            <form action="{% url 'files:folder_delete' folder.id %}" method="post" class="m-0 flex-fill flex-md-grow-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm w-100">
+                                    <i class="bi bi-trash3"></i> <span class="d-none d-sm-inline">Delete</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             {% endfor %}
 
             {% for file in files %}
-                <div class="col">
-                    <div class="card h-100 text-center shadow-sm border border-light-subtle bg-body-tertiary">
-                        <div class="card-body d-flex flex-column align-items-center p-3">
-                            <i class="bi bi-file-earmark-text text-primary icon-lg"></i>
-                            <h6 class="card-title mt-2 mb-1 text-truncate w-100">{{ file.name }}</h6>
-                            <small class="text-body-secondary icon-metadata mb-3">
-                                {{ file.size|file_size }}<br>
-                                {{ file.uploaded_at|date:"d M, Y" }}
-                            </small>
-
-                            <div class="d-flex gap-2 mt-auto w-100">
-                                <a href="{% url 'files:file_download' file.id %}" class="btn btn-success btn-sm w-100">
-                                    <i class="bi bi-download"></i> Download
-                                </a>
-                                <form action="{% url 'files:file_delete' file.id %}" method="post" class="w-100 m-0">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-danger btn-sm w-100">
-                                        <i class="bi bi-trash3"></i> Delete
-                                    </button>
-                                </form>
+                <div class="card shadow-sm border border-light-subtle bg-body-tertiary">
+                    <div class="card-body d-flex flex-column flex-md-row align-items-md-center p-3 gap-3">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden w-100">
+                            <i class="bi bi-file-earmark-text text-primary fs-3"></i>
+                            <div class="text-start overflow-hidden">
+                                <h6 class="card-title mb-1 text-truncate">{{ file.name }}</h6>
+                                <small class="text-body-secondary d-block">
+                                    {{ file.size|file_size }} &bull; {{ file.uploaded_at|date:"d M, Y" }}
+                                </small>
                             </div>
+                        </div>
+
+                        <div class="d-flex gap-2 w-100 w-md-auto justify-content-end mt-2 mt-md-0">
+                            <a href="{% url 'files:file_download' file.id %}" class="btn btn-success btn-sm flex-fill flex-md-grow-0">
+                                <i class="bi bi-download"></i> <span class="d-none d-sm-inline">Download</span>
+                            </a>
+                            <form action="{% url 'files:file_delete' file.id %}" method="post" class="m-0 flex-fill flex-md-grow-0">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger btn-sm w-100">
+                                    <i class="bi bi-trash3"></i> <span class="d-none d-sm-inline">Delete</span>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% else %}
-        <div class="d-flex flex-column justify-content-center align-items-center text-muted drive-empty">
-            <i class="bi bi-folder2-open icon-lg"></i>
+        <div class="d-flex flex-column justify-content-center align-items-center text-muted drive-empty py-5">
+            <i class="bi bi-folder2-open display-1"></i>
             <p class="mt-3">This folder is empty.</p>
         </div>
     {% endif %}
