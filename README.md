@@ -62,7 +62,7 @@ Build and start the container in the background:
 docker compose up -d --build
 ```
 
-Access web application at `http://127.0.0.1:8001` or `http://localhost:8001`.
+Access web application at `http://127.0.0.1:8000` or `http://localhost:8000`.
 
 ## Run Tests
 
