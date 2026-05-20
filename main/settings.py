@@ -181,20 +181,5 @@ AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
 if DEBUG:
     AXES_ENABLED = False
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_TIMEOUT = 20
-EMAIL_USE_TLS = True
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-SERVER_EMAIL = EMAIL_HOST_USER
-
-ADMINS = [
-    (os.getenv("ADMIN_USERNAME"), os.getenv("ADMIN_EMAIL")),
-]
-
-if DEBUG:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+DISCORD_BOT_USERNAME = os.getenv("DISCORD_BOT_USERNAME")
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")

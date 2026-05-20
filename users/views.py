@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from .forms import UserUpdateForm
-from .utils import send_new_user_registration
+from .utils import send_discord_signup_alert
 
 def register(request):
     if request.method == "POST":
@@ -13,7 +13,7 @@ def register(request):
             user.is_active = False
             user.save()
             messages.success(request, "Your account is pending approval. You'll be able to log in once approved.")
-            send_new_user_registration(user)
+            send_discord_signup_alert(user)
             return redirect("users:login")
     else:
         form = UserCreationForm()
