@@ -51,7 +51,7 @@
                     </ul>
                 {% endif %}
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                    <li class="nav-item dropdown">
+                    <li class="nav-item dropdown d-none d-lg-block">
                         <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-circle-half me-2"></i> Theme
                         </a>
@@ -77,6 +77,14 @@
                             </form>
                         </li>
                     {% endif %}
+                    <li class="nav-item dropdown d-lg-none">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Theme</a>
+                        <ul class="dropdown-menu">
+                            <li><button class="dropdown-item" type="button" data-bs-theme-value="light">Light</button></li>
+                            <li><button class="dropdown-item" type="button" data-bs-theme-value="dark">Dark</button></li>
+                            <li><button class="dropdown-item" type="button" data-bs-theme-value="auto">Auto</button></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
