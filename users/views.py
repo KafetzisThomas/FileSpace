@@ -34,3 +34,9 @@ def account(request):
                 return redirect("users:account")
 
     return render(request, "users/account.html", {"username_form": username_form})
+
+@login_required
+def delete_account(request):
+    user = request.user
+    user.delete()
+    return redirect("users:register")

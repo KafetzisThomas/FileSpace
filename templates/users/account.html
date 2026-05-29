@@ -23,6 +23,28 @@
                 <button type="submit" class="btn btn-primary w-100 mt-2">Update Username</button>
             </form>
 
+            <h3 class="mb-3">Danger Zone</h3>
+            <button type="button" class="btn btn-outline-danger w-100 mb-4" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete Account</button>
+
+            <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title text-danger" id="deleteAccountModalLabel">Delete Account?</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">Deleting your account is permanent. It cannot be undone.</div>
+                        <div class="modal-footer">
+                            <form method="post" action="{% url 'users:delete_account' %}" class="d-flex gap-2 w-100">
+                                {% csrf_token %}
+                                <button type="button" class="btn btn-secondary flex-fill" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-danger flex-fill">Delete Account</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 {% endblock content %}
