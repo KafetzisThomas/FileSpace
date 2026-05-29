@@ -17,7 +17,7 @@ class RegistrationForm(UserCreationForm):
 
         return password
 
-class UserUpdateForm(forms.ModelForm):
+class UsernameUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username']
+        fields = ("username",)

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import RegistrationForm, UserUpdateForm
+from .forms import RegistrationForm, UsernameUpdateForm
 from .utils import send_discord_signup_alert
 
 def register(request):
@@ -21,12 +21,16 @@ def register(request):
 
 @login_required
 def account(request):
+    user = request.user
+    username_form = UsernameUpdateForm(instance=user)
+
     if request.method == "POST":
-        form = UserUpdateForm(request.POST, instance=request.user)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Account updated successfully.")
-            return redirect("files:drive")
-    else:
-        form = UserUpdateForm(instance=request.user)
-    return render(request, "users/account.html", {"form": form})
+        action = request.POST.get("action")
+        if action == "update_username":
+            username_form = UsernameUpdateForm(request.POST, instance=user)
+            if username_form.is_valid():
+                username_form.save()
+                messages.success(request, "Username updated successfully.")
+                return redirect("users:account")
+
+    return render(request, "users/account.html", {"username_form": username_form})
