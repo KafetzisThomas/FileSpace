@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
-from .forms import UserUpdateForm
+from .forms import RegistrationForm, UserUpdateForm
 from .utils import send_discord_signup_alert
 
 def register(request):
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = RegistrationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
@@ -16,7 +15,7 @@ def register(request):
             send_discord_signup_alert(user)
             return redirect("users:login")
     else:
-        form = UserCreationForm()
+        form = RegistrationForm()
     return render(request, "users/register.html", {"form": form})
 
 

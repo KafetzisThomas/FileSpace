@@ -17,6 +17,7 @@ dependencies = [
     "boto3>=1.43.9",
     "uvicorn>=0.47.0",
     "requests>=2.34.2",
+    "zxcvbn>=4.5.0",
 ]
 
 [dependency-groups]
