@@ -18,6 +18,11 @@ class Folder(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="folders")
 
+    def total_size(self):
+        files_size = self.files.aggregate(total=models.Sum('size'))['total'] or 0
+        subfolders_size = sum(folder.total_size() for folder in self.subfolders.all())
+        return files_size + subfolders_size
+
     def __str__(self):
         return self.name
 
