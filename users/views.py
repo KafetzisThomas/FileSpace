@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import RegistrationForm, UsernameUpdateForm
+from .forms import RegistrationForm, UsernameUpdateForm, NewPasswordChangeForm
 from .utils import send_discord_signup_alert
 
 def register(request):
@@ -34,6 +35,20 @@ def account(request):
                 return redirect("users:account")
 
     return render(request, "users/account.html", {"username_form": username_form})
+
+@login_required
+def update_password(request):
+    if request.method == "POST":
+        form = NewPasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Your password was successfully updated!")
+            return redirect("users:account")
+    else:
+        form = NewPasswordChangeForm(request.user)
+
+    return render(request, "users/update_password.html", {"form": form})
 
 @login_required
 def delete_account(request):
