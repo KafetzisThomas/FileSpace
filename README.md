@@ -14,8 +14,10 @@
 - [X] File and folder **search**
 - [X] Recursive file and folder **deletion**
 - [X] Secure user authentication and isolated **per user file storage**
-- [X] **UUID based** secure file storage
+- [X] **Multi-factor authentication** for extra account protection
 - [X] Brute force login protection with **rate limiting**
+- [X] **UUID based** secure file storage
+- [X] Automated **discord webhook** alerts for new account registrations
 
 ## Database Schema
 
