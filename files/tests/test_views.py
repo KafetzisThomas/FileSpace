@@ -1,7 +1,9 @@
 import os
 import io
 import zipfile
-from django.test import TestCase, Client
+import tempfile
+import shutil
+from django.test import TestCase, Client, override_settings
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -10,6 +12,9 @@ from ..models import Folder, File
 
 User = get_user_model()
 
+TEMP_MEDIA_ROOT = tempfile.mkdtemp()
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class DriveViewTests(TestCase):
 
     def setUp(self):
@@ -72,7 +77,13 @@ class DriveViewTests(TestCase):
         self.assertIn(self.sub_file_user_1, response.context['files'])
         self.assertNotIn(self.root_file_user_1, response.context['files'])
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class UploadFilesViewTests(TestCase):
 
     def setUp(self):
@@ -127,7 +138,13 @@ class UploadFilesViewTests(TestCase):
         self.assertIsNone(uploaded_file.folder)
         self.assertEqual(uploaded_file.owner, self.user1)
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class UploadFolderViewTests(TestCase):
 
     def setUp(self):
@@ -202,7 +219,13 @@ class UploadFolderViewTests(TestCase):
         file = File.objects.get(name="test1.txt")
         self.assertIsNone(file.folder)  # attached straight to root
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class DownloadFileViewTests(TestCase):
 
     def setUp(self):
@@ -243,7 +266,13 @@ class DownloadFileViewTests(TestCase):
         self.assertEqual(response.headers['Content-Disposition'], expected_header)
         self.assertEqual(b''.join(response.streaming_content), b"test_content")
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class DownloadFolderViewTests(TestCase):
 
     def setUp(self):
@@ -305,7 +334,13 @@ class DownloadFolderViewTests(TestCase):
             with zip_file.open(expected_root_file) as file:
                 self.assertEqual(file.read(), b"test_content_1")
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class DeleteFileViewTests(TestCase):
 
     def setUp(self):
@@ -369,7 +404,13 @@ class DeleteFileViewTests(TestCase):
         self.assertRedirects(response, expected_redirect_url)
         self.assertFalse(File.objects.filter(pk=self.file2.pk).exists())
 
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
 
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
 class DeleteFolderViewTests(TestCase):
 
     def setUp(self):
@@ -432,3 +473,8 @@ class DeleteFolderViewTests(TestCase):
         response = self.client.post(url)
         self.assertRedirects(response, reverse('files:drive'))
         self.assertFalse(Folder.objects.filter(pk=self.folder1.pk).exists())
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
