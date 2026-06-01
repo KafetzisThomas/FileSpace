@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
-from django.contrib.auth.models import User
 from zxcvbn import zxcvbn
+from .models import CustomUser
 
 
 class RegistrationForm(UserCreationForm):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ["username"]
 
     def clean_password1(self):
@@ -21,7 +21,7 @@ class RegistrationForm(UserCreationForm):
 
 class UsernameUpdateForm(forms.ModelForm):
     class Meta:
-        model = User
+        model = CustomUser
         fields = ("username",)
 
 
@@ -40,3 +40,22 @@ class NewPasswordChangeForm(PasswordChangeForm):
                 raise forms.ValidationError("Password is too weak. Try adding more characters, numbers or symbols.")
 
         return password
+
+
+class TwoFactorToggleForm(forms.ModelForm):
+    class Meta:
+        model = CustomUser
+        fields = ("enable_2fa",)
+        widgets = {
+            'enable_2fa': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'role': 'switch',
+                'onchange': 'this.form.submit();'
+            })
+        }
+
+
+class TwoFactorVerificationForm(forms.Form):
+    otp = forms.CharField(label="Generated OTP",
+        widget=forms.TextInput(attrs={"autofocus": "autofocus", "class": "form-control"})
+    )

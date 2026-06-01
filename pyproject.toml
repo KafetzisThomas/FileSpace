@@ -19,6 +19,8 @@ dependencies = [
     "requests>=2.34.2",
     "zxcvbn>=4.5.0",
     "django-cleanup>=9.0.0",
+    "pyotp>=2.9.0",
+    "qrcode[pil]>=8.2",
 ]
 
 [dependency-groups]

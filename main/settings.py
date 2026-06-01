@@ -172,6 +172,10 @@ else:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+SESSION_SAVE_EVERY_REQUEST = True
+AUTH_USER_MODEL = "users.CustomUser"
+
 LOGIN_URL = "users:login"
 LOGIN_REDIRECT_URL = "files:drive"
 LOGOUT_REDIRECT_URL = "/"
