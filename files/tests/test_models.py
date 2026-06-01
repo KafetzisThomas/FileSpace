@@ -49,6 +49,29 @@ class FolderModelTests(TestCase):
         self.assertEqual(root.subfolders.first(), child)
         self.assertEqual(child.parent, root)
 
+    def test_total_size_empty_folder(self):
+        folder = Folder.objects.create(name="Documents", owner=self.user)
+        self.assertEqual(folder.total_size(), 0)
+
+    def test_total_size_with_files(self):
+        folder = Folder.objects.create(name="Documents", owner=self.user)
+        File.objects.create(name="test1.txt", size=150, folder=folder, owner=self.user)
+        File.objects.create(name="test2.txt", size=50, folder=folder, owner=self.user)
+        self.assertEqual(folder.total_size(), 200)
+
+    def test_total_size_recursive_with_nested_folders(self):
+        root = Folder.objects.create(name="Root", owner=self.user)
+        child = Folder.objects.create(name="Child", parent=root, owner=self.user)
+        grandchild = Folder.objects.create(name="Grandchild", parent=child, owner=self.user)
+
+        File.objects.create(name="root_file.txt", size=10, folder=root, owner=self.user)
+        File.objects.create(name="child_file.txt", size=20, folder=child, owner=self.user)
+        File.objects.create(name="grandchild_file.txt", size=30, folder=grandchild, owner=self.user)
+
+        self.assertEqual(grandchild.total_size(), 30)
+        self.assertEqual(child.total_size(), 50)  # 20 + 30
+        self.assertEqual(root.total_size(), 60)  # 10 + 20 + 30
+
 
 class FileModelTests(TestCase):
 
