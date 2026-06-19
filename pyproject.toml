@@ -21,6 +21,7 @@ dependencies = [
     "django-cleanup>=9.0.0",
     "pyotp>=2.9.0",
     "qrcode[pil]>=8.2",
+    "whitenoise[brotli]>=6.12.0",
 ]
 
 [dependency-groups]
