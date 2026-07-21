@@ -2,7 +2,7 @@
     <img src="static/favicon.png" width="150"/>
     <p><strong>FileSpace: </strong>Simple personal file storage.<br>Written in Python/Django</p>
     <img src="https://github.com/KafetzisThomas/FileSpace/actions/workflows/tests.yml/badge.svg"/>
-    <img src="https://img.shields.io/badge/Docker-Enabled-blue?logo=docker"/>
+    <img src="https://img.shields.io/badge/Docker-Supported-blue?logo=docker"/>
 </div>
 
 ## Features
