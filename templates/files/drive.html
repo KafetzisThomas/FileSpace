@@ -62,18 +62,19 @@
     {% if folders or files %}
         <div class="d-flex flex-column gap-2 mt-2">
             {% for folder in folders %}
-                <div class="card shadow-sm border border-light-subtle bg-body-tertiary">
-                    <div class="card-body d-flex flex-column flex-md-row align-items-md-center p-3 gap-3">
-                        <a href="{% url 'files:drive_folder' folder.id %}" class="text-decoration-none text-body d-flex align-items-center gap-3 flex-grow-1 overflow-hidden w-100">
+                <div class="card shadow-sm border border-light-subtle bg-body-tertiary overflow-hidden">
+                    <div class="d-flex flex-column flex-md-row">
+                        <a href="{% url 'files:drive_folder' folder.id %}" class="text-decoration-none text-body d-flex align-items-center gap-3 flex-grow-1 p-3 hover-overlay">
                             <i class="bi bi-folder-fill text-warning fs-3"></i>
-                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-1 gap-md-2 overflow-hidden">
-                                <h6 class="card-title mb-0 text-truncate">{{ folder.name }}</h6>
+                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-1 gap-md-2 overflow-hidden w-100">
+                                <h6 class="mb-0 text-truncate">{{ folder.name }}</h6>
                                 <small class="text-body-secondary text-nowrap">
                                     <span class="d-none d-md-inline">&bull;</span> {{ folder.total_size|file_size }} &bull; {{ folder.created_at|date:"d M, Y" }}
                                 </small>
                             </div>
                         </a>
-                        <div class="d-flex gap-2 w-100 w-md-auto justify-content-end mt-2 mt-md-0">
+
+                        <div class="d-flex align-items-center gap-2 p-3 pt-0 pt-md-3 justify-content-end">
                             <a href="{% url 'files:folder_download' folder.id %}" class="btn btn-success btn-sm flex-fill flex-md-grow-0">
                                 <i class="bi bi-download"></i> <span class="d-none d-sm-inline">Download</span>
                             </a>
@@ -89,19 +90,19 @@
             {% endfor %}
 
             {% for file in files %}
-                <div class="card shadow-sm border border-light-subtle bg-body-tertiary">
-                    <div class="card-body d-flex flex-column flex-md-row align-items-md-center p-3 gap-3">
-                        <div class="d-flex align-items-center gap-3 flex-grow-1 overflow-hidden w-100">
+                <div class="card shadow-sm border border-light-subtle bg-body-tertiary overflow-hidden">
+                    <div class="d-flex flex-column flex-md-row">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1 p-3">
                             <i class="bi bi-file-earmark-text text-primary fs-3"></i>
-                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-1 gap-md-2 overflow-hidden">
-                                <h6 class="card-title mb-0 text-truncate">{{ file.name }}</h6>
+                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-1 gap-md-2 overflow-hidden w-100">
+                                <h6 class="mb-0 text-truncate">{{ file.name }}</h6>
                                 <small class="text-body-secondary text-nowrap">
                                     <span class="d-none d-md-inline">&bull;</span> {{ file.size|file_size }} &bull; {{ file.uploaded_at|date:"d M, Y" }}
                                 </small>
                             </div>
                         </div>
 
-                        <div class="d-flex gap-2 w-100 w-md-auto justify-content-end mt-2 mt-md-0">
+                        <div class="d-flex align-items-center gap-2 p-3 pt-0 pt-md-3 justify-content-end">
                             <a href="{% url 'files:file_download' file.id %}" class="btn btn-success btn-sm flex-fill flex-md-grow-0">
                                 <i class="bi bi-download"></i> <span class="d-none d-sm-inline">Download</span>
                             </a>
