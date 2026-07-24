@@ -28,3 +28,40 @@ body {
 .drive-empty {
   height: 60vh;
 }
+
+.drop-zone {
+  position: relative;
+  min-height: 200px;
+}
+
+.drop-overlay {
+  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background-color: rgba(13, 110, 253, 0.08);
+  border: 2px dashed rgba(13, 110, 253, 0.5);
+  border-radius: 0.5rem;
+  pointer-events: none;
+}
+
+.drop-overlay.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drop-overlay-content {
+  text-align: center;
+  color: #0d6efd;
+}
+
+.drop-overlay-content i {
+  font-size: 3rem;
+}
+
+.drop-overlay-content p {
+  margin-top: 0.5rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
