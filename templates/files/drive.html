@@ -150,7 +150,7 @@
             }
         });
 
-        // drag and drop file upload
+        // drag and drop for file and folder uploads
         (function() {
             const dropZone = document.getElementById('drop-zone');
             const overlay = document.getElementById('drop-overlay');
@@ -177,24 +177,101 @@
                 e.stopPropagation();
             });
 
+            // recursively read all files from a FileSystemDirectoryEntry
+            function readEntryTree(entry, path) {
+                return new Promise(function(resolve) {
+                    if (entry.isFile) {
+                        entry.file(function(file) {
+                            resolve([{ file: file, path: path + file.name }]);
+                        });
+                    } else if (entry.isDirectory) {
+                        const reader = entry.createReader();
+                        const allEntries = [];
+
+                        // may return results in batches
+                        (function readBatch() {
+                            reader.readEntries(function(entries) {
+                                if (entries.length === 0) {
+                                    Promise.all(
+                                        allEntries.map(function(e) {
+                                            return readEntryTree(e, path + entry.name + '/');
+                                        })
+                                    ).then(function(results) {
+                                        resolve(results.flat());
+                                    });
+                                } else {
+                                    allEntries.push(...entries);
+                                    readBatch();
+                                }
+                            });
+                        })();
+                    }
+                });
+            }
+
             dropZone.addEventListener('drop', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
                 dragCounter = 0;
                 overlay.classList.remove('active');
 
-                const files = e.dataTransfer.files;
-                if (files.length === 0) {
+                const items = e.dataTransfer.items;
+                if (!items || items.length === 0) {
                     return;
                 }
 
-                const fileInput = document.getElementById('direct-file-input');
-                const dt = new DataTransfer();
-                for (const file of files) {
-                    dt.items.add(file);
+                const entries = [];
+                let hasDirectory = false;
+                for (let i = 0; i < items.length; i++) {
+                    const entry = items[i].webkitGetAsEntry && items[i].webkitGetAsEntry();
+                    if (entry) {
+                        entries.push(entry);
+                        if (entry.isDirectory) {
+                            hasDirectory = true;
+                        }
+                    }
                 }
-                fileInput.files = dt.files;
-                fileInput.form.submit();
+
+                if (hasDirectory) {
+                    Promise.all(entries.map(function(entry) {
+                        return readEntryTree(entry, '');
+                    })).then(function(results) {
+                        const collected = results.flat();
+                        if (collected.length === 0) {
+                            return;
+                        }
+
+                        const form = document.getElementById('direct-dir-form');
+                        const pathContainer = document.getElementById('direct-path-inputs');
+                        const fileInput = document.getElementById('direct-folder-input');
+
+                        const dt = new DataTransfer();
+                        pathContainer.innerHTML = '';
+                        for (const item of collected) {
+                            dt.items.add(item.file);
+                            const hidden = document.createElement('input');
+                            hidden.type = 'hidden';
+                            hidden.name = 'paths';
+                            hidden.value = item.path;
+                            pathContainer.appendChild(hidden);
+                        }
+                        fileInput.files = dt.files;
+                        form.submit();
+                    });
+                } else {
+                    const files = e.dataTransfer.files;
+                    if (files.length === 0) {
+                        return;
+                    }
+
+                    const fileInput = document.getElementById('direct-file-input');
+                    const dt = new DataTransfer();
+                    for (const file of files) {
+                        dt.items.add(file);
+                    }
+                    fileInput.files = dt.files;
+                    fileInput.form.submit();
+                }
             });
         })();
     </script>

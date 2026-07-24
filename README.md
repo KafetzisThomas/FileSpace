@@ -7,7 +7,7 @@
 
 ## Features
 
-- [X] Upload **single files**, **multiple files** or entire **folders**
+- [X] Upload **single files**, **multiple files** or entire **folders** with **drag & drop** support
 - [X] **Download files** with original filenames preserved
 - [X] **Recursive folder downloads** as `.zip` archives
 - [X] Unlimited **nested folder hierarchy** support
