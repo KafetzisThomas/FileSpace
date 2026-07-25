@@ -70,9 +70,9 @@
         {% if folders or files %}
             <div class="d-flex flex-column gap-2 mt-2">
                 {% for folder in folders %}
-                    <div class="card shadow-sm border border-light-subtle bg-body-tertiary overflow-hidden">
+                    <div class="card shadow-sm border border-light-subtle bg-body-tertiary overflow-hidden upload-section">
                         <div class="d-flex flex-column flex-md-row">
-                            <a href="{% url 'files:drive_folder' folder.id %}" class="text-decoration-none text-body d-flex align-items-center gap-3 flex-grow-1 p-3 hover-overlay">
+                            <a href="{% url 'files:drive_folder' folder.id %}" class="text-decoration-none text-body d-flex align-items-center gap-3 flex-grow-1 p-3">
                                 <i class="bi bi-folder-fill text-warning fs-3"></i>
                                 <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-1 gap-md-2 overflow-hidden w-100">
                                     <h6 class="mb-0 text-truncate">{{ folder.name }}</h6>
@@ -98,7 +98,7 @@
                 {% endfor %}
 
                 {% for file in files %}
-                    <div class="card shadow-sm border border-light-subtle bg-body-tertiary overflow-hidden">
+                    <div class="card shadow-sm border border-light-subtle bg-body-tertiary overflow-hidden upload-section">
                         <div class="d-flex flex-column flex-md-row">
                             <div class="d-flex align-items-center gap-3 flex-grow-1 p-3">
                                 <i class="bi bi-file-earmark-text text-primary fs-3"></i>
