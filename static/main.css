@@ -38,6 +38,28 @@ body {
   height: 60vh;
 }
 
+.upload-progress-overlay {
+  display: none;
+  z-index: 1050;
+  background-color: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+}
+
+.upload-progress-overlay.active {
+  display: flex;
+}
+
+.upload-progress-card {
+  padding: 2rem 2.5rem;
+  min-width: 320px;
+  max-width: 400px;
+}
+
+.upload-progress-bar-fill {
+  background: linear-gradient(90deg, #0d6efd, #6610f2) !important;
+  transition: width 0.2s ease;
+}
+
 .drop-zone {
   position: relative;
   min-height: 200px;

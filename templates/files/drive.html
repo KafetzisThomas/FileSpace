@@ -42,7 +42,7 @@
                     <label for="direct-file-input" class="btn btn-primary btn-sm mb-0 w-100 text-nowrap">
                         <i class="bi bi-cloud-arrow-up"></i> Upload Files
                     </label>
-                    <input type="file" id="direct-file-input" name="file_field" multiple class="d-none" onchange="this.form.submit()">
+                    <input type="file" id="direct-file-input" name="file_field" multiple class="d-none">
                 </form>
                 <form id="direct-dir-form" action="{% url 'files:upload_folder' %}" method="post" enctype="multipart/form-data" class="flex-fill">
                     {% csrf_token %}
@@ -133,7 +133,63 @@
         {% endif %}
     </div>
 
+    <div id="upload-progress" class="upload-progress-overlay position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center">
+        <div class="upload-progress-card bg-body border rounded-4 text-center shadow-lg">
+            <i class="bi bi-cloud-arrow-up-fill h1 text-primary d-block mb-2"></i>
+            <h5 class="mb-3">Uploading…</h5>
+            <div class="progress" style="height: 12px;">
+                <div id="upload-progress-bar" class="progress-bar upload-progress-bar-fill" role="progressbar"></div>
+            </div>
+            <p id="upload-progress-text" class="mt-3 mb-0 small fw-semibold text-body">0%</p>
+        </div>
+    </div>
+
     <script>
+        // upload with XHR + progress tracking
+        function uploadWithProgress(form) {
+            const overlay = document.getElementById('upload-progress');
+            const bar = document.getElementById('upload-progress-bar');
+            const text = document.getElementById('upload-progress-text');
+
+            overlay.classList.add('active');
+            bar.style.width = '0%';
+            text.textContent = '0%';
+
+            const formData = new FormData(form);
+            const xhr = new XMLHttpRequest();
+
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const progressPercent = Math.round((e.loaded / e.total) * 100);
+                    bar.style.width = progressPercent + '%';
+
+                    const loadedMB = (e.loaded / 1048576).toFixed(1);
+                    const totalMB = (e.total / 1048576).toFixed(1);
+                    text.textContent = progressPercent + '% \u2014 ' + loadedMB + ' / ' + totalMB + ' MB';
+                }
+            });
+
+            xhr.addEventListener('load', function() {
+                bar.style.width = '100%';
+                text.textContent = '100%';
+                window.location.reload();
+            });
+
+            xhr.addEventListener('error', function() {
+                overlay.classList.remove('active');
+                alert('Upload failed. Please try again.');
+            });
+
+            xhr.open(form.method, form.action);
+            xhr.send(formData);
+        }
+
+        document.getElementById('direct-file-input').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                uploadWithProgress(this.form);
+            }
+        });
+
         // extract subdirs and files for submission
         document.getElementById('direct-folder-input').addEventListener('change', function(e) {
             if (this.files.length > 0) {
@@ -146,7 +202,7 @@
                     input.value = file.webkitRelativePath; 
                     container.appendChild(input);
                 }
-                document.getElementById('direct-dir-form').submit();
+                uploadWithProgress(document.getElementById('direct-dir-form'));
             }
         });
 
@@ -256,7 +312,7 @@
                             pathContainer.appendChild(hidden);
                         }
                         fileInput.files = dt.files;
-                        form.submit();
+                        uploadWithProgress(form);
                     });
                 } else {
                     const files = e.dataTransfer.files;
@@ -270,7 +326,7 @@
                         dt.items.add(file);
                     }
                     fileInput.files = dt.files;
-                    fileInput.form.submit();
+                    uploadWithProgress(fileInput.form);
                 }
             });
         })();
