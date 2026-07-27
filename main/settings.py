@@ -154,6 +154,8 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+DATA_UPLOAD_MAX_NUMBER_FILES = None
+
 if not DEBUG:
     # prod: use S3 for media files
     STORAGES = {
