@@ -77,6 +77,8 @@ uv run manage.py test
 
 ![Drive](/assets/drive.png)
 
+![Drag and Drop](/assets/drag_and_drop.png)
+
 ![Upload Folder](/assets/upload_folder.png)
 
 ![Upload File](/assets/upload_file.png)
