@@ -21,6 +21,10 @@ def drive(request, folder_id=None):
         folders = Folder.objects.filter(owner=request.user, name__icontains=search).order_by("name")
         files = File.objects.filter(owner=request.user, name__icontains=search).order_by("name")
 
+    if request.GET.get('uploaded') == 'success':
+        messages.success(request, "Upload completed successfully.")
+        return redirect("files:drive")
+
     context = {
         "current_folder": current_folder,
         "folders": folders,
@@ -40,7 +44,6 @@ def upload_files(request):
     for file in files:
         File.objects.create(file=file, name=file.name, folder=target_folder, size=file.size, owner=request.user)
 
-    messages.success(request, "File(s) uploaded successfully.")
     return redirect("files:drive_folder", folder_id=target_folder.id) if target_folder else redirect("files:drive")    
 
 @login_required
@@ -60,7 +63,6 @@ def upload_folder(request):
 
         File.objects.create(file=uploaded_file, name=uploaded_file.name, folder=current_parent, size=uploaded_file.size, owner=request.user)
 
-    messages.success(request, "Folder uploaded successfully.")
     return redirect("files:drive_folder", folder_id=root_folder.id) if root_folder else redirect("files:drive")
 
 @login_required

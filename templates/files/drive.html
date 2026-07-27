@@ -172,7 +172,7 @@
             xhr.addEventListener('load', function() {
                 bar.style.width = '100%';
                 text.textContent = '100%';
-                window.location.reload();
+                window.location.href = window.location.pathname + '?uploaded=success';
             });
 
             xhr.addEventListener('error', function() {
