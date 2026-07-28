@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load file_size %}
+
+{% block title %}{{ file.name }}{% endblock title %}
+
+{% block extra_head %}
+    <link id="hljs-theme" rel="stylesheet" href="">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('theme');
+            if (!theme || theme === 'auto') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            }
+            var href = theme === 'dark'
+                ? 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github-dark.min.css'
+                : 'https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/styles/github.min.css';
+            document.getElementById('hljs-theme').href = href;
+        })();
+    </script>
+{% endblock extra_head %}
+
+{% block content %}
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% if file.folder %}{% url 'files:drive_folder' file.folder.id %}{% else %}{% url 'files:drive' %}{% endif %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <h4 class="mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-file-earmark-text text-primary"></i>
+                <span class="text-truncate" style="max-width: 400px;">{{ file.name }}</span>
+                <span class="badge bg-secondary small px-2 py-1">{{ file.size|file_size }}</span>
+            </h4>
+        </div>
+        <a href="{% url 'files:file_download' file.id %}" class="btn btn-success btn-sm">
+            <i class="bi bi-download"></i> Download
+        </a>
+    </div>
+
+    <hr>
+
+    {% if content is not None %}
+        <div class="border rounded overflow-auto" style="max-height: 80vh; font-size: 0.875rem;">
+            <pre class="m-0 p-3"><code>{{ content }}</code></pre>
+        </div>
+    {% elif too_large %}
+        <div class="d-flex flex-column justify-content-center align-items-center text-center text-muted py-5">
+            <i class="bi bi-exclamation-triangle display-1"></i>
+            <p class="mt-3">This file is too large to preview ({{ file.size|file_size }}).<br>Maximum preview size is 5 MB.</p>
+            <a href="{% url 'files:file_download' file.id %}" class="btn btn-success">
+                <i class="bi bi-download"></i> Download instead
+            </a>
+        </div>
+    {% elif error %}
+        <div class="d-flex flex-column justify-content-center align-items-center text-center text-muted py-5">
+            <i class="bi bi-file-earmark-x display-1"></i>
+            <p class="mt-3">{{ error }}</p>
+            <a href="{% url 'files:file_download' file.id %}" class="btn btn-success">
+                <i class="bi bi-download"></i> Download instead
+            </a>
+        </div>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.11.1/build/highlight.min.js"></script>
+
+    <script>
+        hljs.highlightAll();
+    </script>
+{% endblock content %}

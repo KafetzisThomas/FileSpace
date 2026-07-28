@@ -11,6 +11,8 @@
     <link rel="stylesheet" type="text/css" href="{% static 'main.css' %}">
     <link rel="icon" type="image/png" href="{% static 'favicon.png' %}">
 
+    {% block extra_head %}{% endblock extra_head %}
+
     <script>
         const getStoredTheme = () => localStorage.getItem('theme');
         const setStoredTheme = theme => localStorage.setItem('theme', theme);

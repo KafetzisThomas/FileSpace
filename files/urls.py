@@ -9,6 +9,7 @@ urlpatterns = [
     path("upload/files/", views.upload_files, name="upload_files"),
     path("upload/folder/", views.upload_folder, name="upload_folder"),
 
+    path("files/<int:pk>/view", views.preview_file, name="file_preview"),
     path("files/<int:pk>/download", views.download_file, name="file_download"),
     path("files/<int:pk>/delete", views.delete_file, name="file_delete"),
 

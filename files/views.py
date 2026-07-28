@@ -7,6 +7,7 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponse, FileResponse, Http404
 from .models import Folder, File
 from .utils import add_folder_to_zip
+from django.conf import settings
 
 @login_required
 def drive(request, folder_id=None):
@@ -64,6 +65,30 @@ def upload_folder(request):
         File.objects.create(file=uploaded_file, name=uploaded_file.name, folder=current_parent, size=uploaded_file.size, owner=request.user)
 
     return redirect("files:drive_folder", folder_id=root_folder.id) if root_folder else redirect("files:drive")
+
+@login_required
+def preview_file(request, pk):
+    file = get_object_or_404(File, pk=pk, owner=request.user)
+
+    context = {
+        "file": file,
+        "content": None,
+        "too_large": False,
+        "error": None,
+    }
+
+    if file.size > settings.MAX_PREVIEW_SIZE:
+        context["too_large"] = True
+    else:
+        try:
+            with file.file.open("rb") as file:
+                file.seek(0)
+                raw = file.read()
+                context["content"] = raw.decode("utf-8")
+        except Exception:
+            context["error"] = "Unable to read this file."
+
+    return render(request, "files/preview.html", context)
 
 @login_required
 def download_file(request, pk):
