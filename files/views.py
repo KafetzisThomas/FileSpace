@@ -96,24 +96,23 @@ def preview_file(request, pk):
         context["file_type"] = "image"
     elif mime_type == "application/pdf":
         context["file_type"] = "pdf"
+        context["content"] = True
 
     if file.size > settings.MAX_PREVIEW_SIZE:
         context["too_large"] = True
-    else:
-        try:
-            if context["file_type"] == "pdf":
-                context["content"] = "use_inline_url"
+        return render(request, "files/preview.html", context)
+
+    try:
+        with file.file.open("rb") as file:
+            file.seek(0)
+            raw = file.read()
+            if context["file_type"] == "image":
+                encoded = base64.b64encode(raw).decode("utf-8")
+                context["content"] = f"data:{mime_type};base64,{encoded}"
             else:
-                with file.file.open("rb") as file:
-                    file.seek(0)
-                    raw = file.read()
-                    if context["file_type"] == "image":
-                        encoded = base64.b64encode(raw).decode("utf-8")
-                        context["content"] = f"data:{mime_type};base64,{encoded}"
-                    else:
-                        context["content"] = raw.decode("utf-8")
-        except Exception:
-            context["error"] = "Unable to read this file."
+                context["content"] = raw.decode("utf-8")
+    except Exception:
+        context["error"] = "Unable to read this file."
 
     return render(request, "files/preview.html", context)
 
