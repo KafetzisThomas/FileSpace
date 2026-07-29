@@ -47,6 +47,10 @@
             <div class="border rounded overflow-auto d-flex justify-content-center align-items-center">
                 <img src="{{ content }}" alt="{{ file.name }}" class="img-fluid">
             </div>
+        {% elif file_type == 'pdf' %}
+            <div class="border rounded overflow-hidden" style="height: 80vh;">
+                <object data="{% url 'files:preview_pdf' file.id %}" type="application/pdf" width="100%" height="100%"></object>
+            </div>
         {% endif %}
     {% elif too_large %}
         <div class="d-flex flex-column justify-content-center align-items-center text-center text-muted py-5">
