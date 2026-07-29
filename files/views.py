@@ -1,4 +1,6 @@
+import base64
 import zipfile
+import mimetypes
 from io import BytesIO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -72,10 +74,15 @@ def preview_file(request, pk):
 
     context = {
         "file": file,
+        "file_type": "text",
         "content": None,
         "too_large": False,
         "error": None,
     }
+
+    mime_type, _ = mimetypes.guess_type(file.name)
+    if mime_type and mime_type.startswith("image/"):
+        context["file_type"] = "image"
 
     if file.size > settings.MAX_PREVIEW_SIZE:
         context["too_large"] = True
@@ -84,7 +91,11 @@ def preview_file(request, pk):
             with file.file.open("rb") as file:
                 file.seek(0)
                 raw = file.read()
-                context["content"] = raw.decode("utf-8")
+                if context["file_type"] == "image":
+                    encoded = base64.b64encode(raw).decode("utf-8")
+                    context["content"] = f"data:{mime_type};base64,{encoded}"
+                else:
+                    context["content"] = raw.decode("utf-8")
         except Exception:
             context["error"] = "Unable to read this file."
 

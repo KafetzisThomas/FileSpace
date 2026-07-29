@@ -38,10 +38,16 @@
 
     <hr>
 
-    {% if content is not None %}
-        <div class="border rounded overflow-auto" style="max-height: 80vh; font-size: 0.875rem;">
-            <pre class="m-0 p-3"><code>{{ content }}</code></pre>
-        </div>
+    {% if content %}
+        {% if file_type == 'text' %}
+            <div class="border rounded overflow-auto" style="max-height: 80vh; font-size: 0.875rem;">
+                <pre class="m-0 p-3"><code>{{ content }}</code></pre>
+            </div>
+        {% elif file_type == 'image' %}
+            <div class="border rounded overflow-auto d-flex justify-content-center align-items-center">
+                <img src="{{ content }}" alt="{{ file.name }}" class="img-fluid">
+            </div>
+        {% endif %}
     {% elif too_large %}
         <div class="d-flex flex-column justify-content-center align-items-center text-center text-muted py-5">
             <i class="bi bi-exclamation-triangle display-1"></i>
