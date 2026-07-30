@@ -9,6 +9,7 @@
 
 - [X] Upload **single files**, **multiple files** or entire **folders** with **drag & drop** support
 - [X] **Download files** with original filenames preserved
+- [X] **Preview files** (text, images, PDFs) directly in the browser
 - [X] **Recursive folder downloads** as `.zip` archives
 - [X] Unlimited **nested folder hierarchy** support
 - [X] File and folder **search**
