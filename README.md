@@ -86,6 +86,8 @@ uv run manage.py test
 
 ![Folder Contents](/assets/folder_contents.png)
 
+![Preview File](/assets/preview_file.png)
+
 ![Search](/assets/search.png)
 
 ![Delete File](/assets/delete_file.png)
