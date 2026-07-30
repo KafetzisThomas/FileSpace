@@ -478,3 +478,134 @@ class DeleteFolderViewTests(TestCase):
     def tearDownClass(cls):
         shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
         super().tearDownClass()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT, MAX_PREVIEW_SIZE=25 * 1024 * 1024)
+class PreviewFileViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user1 = User.objects.create_user(username='user1', password='password123')
+        self.user2 = User.objects.create_user(username='user2', password='password123')
+
+        self.text_file = File.objects.create(
+            file=SimpleUploadedFile("readme.txt", b"test content"), name="readme.txt", size=11, owner=self.user1
+        )
+        self.image_file = File.objects.create(
+            file=SimpleUploadedFile("photo.png", b"test content"), name="photo.png", size=8, owner=self.user1
+        )
+        self.pdf_file = File.objects.create(
+            file=SimpleUploadedFile("doc.pdf", b"test content"), name="doc.pdf", size=8, owner=self.user1
+        )
+
+    def test_unauthenticated_user_redirects_to_login(self):
+        url = reverse('files:file_preview', kwargs={'pk': self.text_file.pk})
+        response = self.client.get(url)
+        self.assertRedirects(response, f'/user/login/?next={url}')
+
+    def test_user_cannot_preview_other_users_file(self):
+        self.client.login(username='user2', password='password123')
+        url = reverse('files:file_preview', kwargs={'pk': self.text_file.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_preview_text_file(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_preview', kwargs={'pk': self.text_file.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_type'], 'text')
+        self.assertEqual(response.context['content'], 'test content')
+        self.assertFalse(response.context['too_large'])
+        self.assertIsNone(response.context['error'])
+
+    def test_preview_image_file(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_preview', kwargs={'pk': self.image_file.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_type'], 'image')
+        self.assertTrue(response.context['content'].startswith('data:image/png;base64,'))
+
+    def test_preview_pdf_file_type(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_preview', kwargs={'pk': self.pdf_file.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['file_type'], 'pdf')
+
+    @override_settings(MAX_PREVIEW_SIZE=5)
+    def test_too_large_file_returns_too_large_flag(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_preview', kwargs={'pk': self.text_file.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['too_large'])
+        self.assertIsNone(response.context['content'])
+
+    def test_nonexistent_file_returns_404(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:file_preview', kwargs={'pk': 99999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()
+
+
+@override_settings(MEDIA_ROOT=TEMP_MEDIA_ROOT)
+class PreviewPdfViewTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+
+        self.user1 = User.objects.create_user(username='user1', password='password123')
+        self.user2 = User.objects.create_user(username='user2', password='password123')
+
+        self.pdf_file = File.objects.create(
+            file=SimpleUploadedFile("doc.pdf", b"test content"), name="doc.pdf", size=8, owner=self.user1
+        )
+
+    def test_unauthenticated_user_redirects_to_login(self):
+        url = reverse('files:preview_pdf', kwargs={'pk': self.pdf_file.pk})
+        response = self.client.get(url)
+        self.assertRedirects(response, f'/user/login/?next={url}')
+
+    def test_user_cannot_preview_other_users_pdf(self):
+        self.client.login(username='user2', password='password123')
+        url = reverse('files:preview_pdf', kwargs={'pk': self.pdf_file.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    def test_successful_pdf_response_headers(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:preview_pdf', kwargs={'pk': self.pdf_file.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+
+    def test_successful_pdf_response_content(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:preview_pdf', kwargs={'pk': self.pdf_file.pk})
+        response = self.client.get(url)
+
+        self.assertEqual(b''.join(response.streaming_content), b"test content")
+
+    def test_nonexistent_pdf_returns_404(self):
+        self.client.login(username='user1', password='password123')
+        url = reverse('files:preview_pdf', kwargs={'pk': 99999})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+
+    @classmethod
+    def tearDownClass(cls):
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+        super().tearDownClass()

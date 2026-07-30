@@ -1,12 +1,16 @@
+import base64
 import zipfile
+import mimetypes
 from io import BytesIO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.views.decorators.http import require_POST
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.http import HttpResponse, FileResponse, Http404
 from .models import Folder, File
 from .utils import add_folder_to_zip
+from django.conf import settings
 
 @login_required
 def drive(request, folder_id=None):
@@ -64,6 +68,53 @@ def upload_folder(request):
         File.objects.create(file=uploaded_file, name=uploaded_file.name, folder=current_parent, size=uploaded_file.size, owner=request.user)
 
     return redirect("files:drive_folder", folder_id=root_folder.id) if root_folder else redirect("files:drive")
+
+@login_required
+@xframe_options_sameorigin
+def preview_pdf(request, pk):
+    file = get_object_or_404(File, pk=pk, owner=request.user)
+
+    response = FileResponse(file.file.open("rb"), content_type="application/pdf")
+    response["Content-Disposition"] = f'inline; filename="{file.name}"'
+
+    return response
+
+@login_required
+def preview_file(request, pk):
+    file = get_object_or_404(File, pk=pk, owner=request.user)
+
+    context = {
+        "file": file,
+        "file_type": "text",
+        "content": None,
+        "too_large": False,
+        "error": None,
+    }
+
+    mime_type, _ = mimetypes.guess_type(file.name)
+    if mime_type and mime_type.startswith("image/"):
+        context["file_type"] = "image"
+    elif mime_type == "application/pdf":
+        context["file_type"] = "pdf"
+        context["content"] = True
+
+    if file.size > settings.MAX_PREVIEW_SIZE:
+        context["too_large"] = True
+        return render(request, "files/preview.html", context)
+
+    try:
+        with file.file.open("rb") as file:
+            file.seek(0)
+            raw = file.read()
+            if context["file_type"] == "image":
+                encoded = base64.b64encode(raw).decode("utf-8")
+                context["content"] = f"data:{mime_type};base64,{encoded}"
+            else:
+                context["content"] = raw.decode("utf-8")
+    except Exception:
+        context["error"] = "Unable to read this file."
+
+    return render(request, "files/preview.html", context)
 
 @login_required
 def download_file(request, pk):
