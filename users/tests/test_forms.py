@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from ..forms import RegistrationForm, PasswordChangeForm
+from ..forms import RegistrationForm, NewPasswordChangeForm
 
 User = get_user_model()
 
@@ -28,7 +28,7 @@ class RegistrationFormTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
 
 
-class PasswordChangeFormTests(TestCase):
+class NewPasswordChangeFormTests(TestCase):
 
     def setUp(self):
         self.user = User.objects.create_user(username="user", password="Str0ng_p@ssword")
@@ -44,9 +44,9 @@ class PasswordChangeFormTests(TestCase):
         }
 
     def test_password_change_weak(self):
-        form = PasswordChangeForm(user=self.user, data=self.password_weak)
+        form = NewPasswordChangeForm(user=self.user, data=self.password_weak)
         self.assertFalse(form.is_valid(), form.errors)
 
     def test_password_change_strong(self):
-        form = PasswordChangeForm(user=self.user, data=self.password_strong)
+        form = NewPasswordChangeForm(user=self.user, data=self.password_strong)
         self.assertTrue(form.is_valid(), form.errors)
