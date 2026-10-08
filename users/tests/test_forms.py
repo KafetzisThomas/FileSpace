@@ -1,6 +1,7 @@
-from django.test import TestCase
 from django.contrib.auth import get_user_model
-from ..forms import RegistrationForm, NewPasswordChangeForm
+from django.test import TestCase
+
+from ..forms import NewPasswordChangeForm, RegistrationForm
 
 User = get_user_model()
 

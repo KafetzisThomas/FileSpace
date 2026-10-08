@@ -1,6 +1,7 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
 from zxcvbn import zxcvbn
+
 from .models import CustomUser
 
 

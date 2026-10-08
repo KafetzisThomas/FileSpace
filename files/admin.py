@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import Folder, File
+
+from .models import File, Folder
+
 
 @admin.register(Folder)
 class FolderAdmin(admin.ModelAdmin):

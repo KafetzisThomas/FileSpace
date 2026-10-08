@@ -1,8 +1,10 @@
 import uuid
-from django.test import TestCase
 from unittest.mock import Mock
+
 from django.contrib.auth import get_user_model
-from ..models import user_file_path, Folder, File
+from django.test import TestCase
+
+from ..models import File, Folder, user_file_path
 
 User = get_user_model()
 

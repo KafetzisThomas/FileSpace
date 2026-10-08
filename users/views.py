@@ -1,17 +1,26 @@
-import pyotp
-import qrcode
 import base64
 from io import BytesIO
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import update_session_auth_hash, login
-from django.views.decorators.http import require_POST
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.views import LoginView
-from django.contrib.auth.forms import AuthenticationForm
+
+import pyotp
+import qrcode
 from django.contrib import messages
+from django.contrib.auth import login, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.views import LoginView
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from .forms import (
+    NewPasswordChangeForm,
+    RegistrationForm,
+    TwoFactorToggleForm,
+    TwoFactorVerificationForm,
+    UsernameUpdateForm,
+)
 from .models import CustomUser
-from .forms import RegistrationForm, UsernameUpdateForm, NewPasswordChangeForm, TwoFactorToggleForm, TwoFactorVerificationForm
 from .utils import send_discord_signup_alert
+
 
 def register(request):
     if request.method == "POST":

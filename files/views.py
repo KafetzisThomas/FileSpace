@@ -1,16 +1,19 @@
 import base64
-import zipfile
 import mimetypes
+import zipfile
 from io import BytesIO
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from django.views.decorators.http import require_POST
-from django.views.decorators.clickjacking import xframe_options_sameorigin
-from django.http import HttpResponse, FileResponse, Http404
-from .models import Folder, File
-from .utils import add_folder_to_zip
+
 from django.conf import settings
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import FileResponse, Http404, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.views.decorators.http import require_POST
+
+from .models import File, Folder
+from .utils import add_folder_to_zip
+
 
 @login_required
 def drive(request, folder_id=None):
@@ -111,7 +114,7 @@ def preview_file(request, pk):
                 context["content"] = f"data:{mime_type};base64,{encoded}"
             else:
                 context["content"] = raw.decode("utf-8")
-    except Exception:
+    except (OSError, ValueError):
         context["error"] = "Unable to read this file."
 
     return render(request, "files/preview.html", context)
