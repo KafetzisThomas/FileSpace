@@ -20,6 +20,27 @@
 - [X] **UUID based** secure file storage
 - [X] Automated **discord webhook** alerts for new account registrations
 
+## System Architecture
+
+```mermaid
+flowchart TD
+    User["User (Browser)"]
+    Auth["Auth & 2FA"]
+    FileManager["File Manager"]
+    DB[("Database (PostgreSQL)")]
+    Storage[("File Storage (S3)")]
+    Discord["Discord Webhook"]
+
+    User -->|"Authenticates (Password + TOTP)"| Auth
+    User -->|"Uploads, previews, searches, downloads & deletions"| FileManager
+
+    Auth -->|"Sends new registration alerts"| Discord
+    Auth -->|"Validates user sessions"| DB
+
+    FileManager -->|"Stores file metadata"| DB
+    FileManager -->|"Reads & writes file binaries"| Storage
+```
+
 ## Database Schema
 
 ![Database Schema](/assets/db_schema.png)
