@@ -43,7 +43,45 @@ flowchart TD
 
 ## Database Schema
 
-![Database Schema](/assets/db_schema.png)
+```mermaid
+erDiagram
+    direction LR
+    User ||--o{ Folder : "owns"
+    User ||--o{ File : "owns"
+    Folder |o--o{ Folder : "subfolders"
+    Folder |o--o{ File : "contains"
+
+    User {
+        integer id PK
+        varchar username
+        varchar password
+        boolean enable_2fa
+        varchar otp_secret
+        boolean is_active
+        boolean is_staff
+        boolean is_superuser
+        timestamp last_login
+        timestamp date_joined
+    }
+
+    Folder {
+        integer id PK
+        integer parent_id FK
+        integer owner_id FK
+        varchar name
+        timestamp created_at
+    }
+
+    File {
+        integer id PK
+        integer folder_id FK
+        integer owner_id FK
+        varchar file
+        varchar name
+        integer size
+        timestamp uploaded_at
+    }
+```
 
 ## Usage
 
